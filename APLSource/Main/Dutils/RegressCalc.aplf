@@ -8,7 +8,7 @@
  Divide←{({⍵+⍵=0}⍺)÷{⍵+0.000001000001×⍵=0}⍵}
  yname←⊃names
  xnames←1↓names
- const←∨/m←+/1=x
+ const←∨/m←∧⌿1=x
  :If const
      ic←m⍳1
      k←⍳2⊃⍴x
