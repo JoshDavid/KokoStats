@@ -1,0 +1,6 @@
+ z←n Rndp_DUP z;m;⎕ML;⎕IO
+
+     ⍝∇  round to a number of decimal places:
+ ⎕ML←⎕IO←1
+ m←10*n
+ z←(⌊0.5+m×z)÷m

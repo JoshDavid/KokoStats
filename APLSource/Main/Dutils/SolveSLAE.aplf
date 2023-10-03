@@ -1,0 +1,57 @@
+ {(x dl ai a check CN)}←y SolveSLAE A;⎕ML;⎕IO;nr;inr;B;ibc;pbig;psmall;i;km;pivot;kr;w;j;r;big
+
+     ⍝∇   Solve Simultaneous-Linear-Algebraic-Equations by Gauss
+     ⍝∇   elimination, watching the pivots to monitor singularity.
+     ⍝∇   xty can have more than one column (more than one right-
+     ⍝∇   hand side.
+     ⍝∇   xtx,xty  in regression analysis is equivalent to solving
+     ⍝∇   Ax=y   where the x's are the solution.
+
+ ⎕ML←⎕IO←1
+
+     ⍝ try scaling A and y
+ big←⌈/|,A
+     ⍝ A÷←big
+     ⍝ y÷←big
+
+ x←dl←ai←a←check←CN←⍬ 17 ⍬ ⍬ ⍬ ⍬    ⍝ incase of perfect singularity
+ nr←≢y
+ inr←⍳nr
+ B←A,y,(nr nr⍴1,nr⍴0),nr⍴1          ⍝  an augmented matrix that will
+                                         ⍝  collect the inverse of A
+ B←B÷⍉(⌽⍴B)⍴⌈/|A                    ⍝  scale the entire matrix  (the identity matrix part as well?)
+ ibc←⍳2⊃⍴B
+ pbig←1
+ psmall←1⌈⊃B
+
+ :For i :In ⍳nr                     ⍝  process each row
+     km←⊃(i-1)+1↑⍒|(i-1)↓B[;i]     ⍝  index of biggest value on or below the pivot
+     B[i km;]←B[km i;]             ⍝  swap biggest into the pivot row  , i
+     pivot←B[i;i]
+     :If pivot=0 ⋄ :Return ⋄ :EndIf
+     B[i;]÷←pivot                  ⍝  normalize the pivot row
+     pbig⌈←|pivot                  ⍝  keep track of big and small pivots
+     psmall⌊←|pivot
+     ⍝      'pivoting'Watcher i pbig psmall
+     :If i=nr ⋄ :Leave ⋄ :EndIf    ⍝  we are at the bottom
+     ⍝  for all the rows below the pivot, subtract off the pivot row
+     kr←i↓inr
+     w←B[kr;i]                     ⍝  the weights for each row
+     B[kr;i]←0                     ⍝  by definition
+     B[kr;i↓ibc]-←↑w×⊂B[i;i↓ibc]   ⍝  subtract the pivot row
+ :EndFor
+ dl←2 RndDP 10⍟pbig÷{⍵+⍵=0}psmall
+
+     ⍝   Back out the soln.
+ :For j :In 1↓⌽⍳nr
+     x←B[j+1;nr+1]
+     kr←⍳j
+     w←B[kr;j+1]
+     B[kr;]-←↑w×⊂B[j+1;]
+ :EndFor
+ x←B[;nr+1]
+ a←B[⍳nr;⍳nr]
+ ai←B[⍳nr;nr+1+⍳nr]
+
+ check←(A)+.×ai
+ CN←(MatNormFrob A)×(MatNormFrob ai)   ⍝ condition number

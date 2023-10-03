@@ -1,0 +1,12 @@
+ ib←IncBeta_Integers(x nu1 nu2);omx;mult;sum;To;⎕ML;⎕IO
+
+     ⍝∇ A&S 26.5.7  p944
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ To←{(×⍺-⍵)×⍺+(×⍵-⍺)×⍳1+|⍵-⍺}
+ omx←1-x
+ mult←(omx*nu1+nu2-1)
+ sum←+/{(⍵!nu1+nu2-1)×(x÷omx)*⍵}¨0 To nu1-1
+
+ ib←1-mult×sum
+ :Return

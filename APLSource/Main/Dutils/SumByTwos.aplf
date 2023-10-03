@@ -1,0 +1,13 @@
+ v←SumByTwos v;n;⎕ML;⎕IO
+
+     ⍝∇  straight summation can be subject to roundoff error, particularly
+     ⍝∇  if the items are monatonically decreasing.  Randomize the data and
+     ⍝∇  then add the front half to the back half; repeatedly.
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ :If 0=⎕NC'rand' ⋄ n←≢v ⋄ v←v[n?n] ⋄ rand←1 ⋄ :EndIf
+ :If 1=≢v ⋄ ⎕EX'rand' ⋄ :Return ⋄ :EndIf
+ :If 2|≢v ⋄ v,←0 ⋄ :EndIf
+ n←0.5×≢v
+ v←(n↑v)+(n↓v)
+ v←⊃SumByTwos v

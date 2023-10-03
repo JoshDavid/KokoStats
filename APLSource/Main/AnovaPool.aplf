@@ -1,0 +1,90 @@
+ {ns}←NS AnovaPool abt_mss_fr_il_al_si;⎕ML;⎕IO;IsNumb;To;ns;abt;mss;il;al;select;list;kn;AT;head;colnames;kerr;ktop;kbot;fac;sos;cms;aph;errsos;errdof;errms;mask;ms;io;kpool;dof;newsos;newdof;newms;newesos;newedof;newems;nr;at;ker;ka;js;jd;jm;jf;ja;maskms;maskil;maskal;fr;fra;si
+
+     ⍝∇   Pick up that last Anova and recalculate the Anova table
+     ⍝∇    combining insignificant factors into error.
+
+     ⍝∇  Examples:
+     ⍝∇      AnovaPool abt {⍬ ⍬ ⍬ ⍬ ⍬}    ⍝ pool All But The "n" biggest mean squares
+     ⍝∇      AnovaPool ⍬ mms {⍬ ⍬ ⍬ ⍬}    ⍝ pool factors with MS < Minimum Mean Square
+     ⍝∇      AnovaPool ⍬ ⍬ fr {⍬ ⍬ ⍬}     ⍝ pool all Fratios smaller than fr
+     ⍝∇      AnovaPool ⍬ ⍬ ⍬ il {⍬ ⍬}     ⍝ pool all Interaction Levels  il and higher
+     ⍝∇      AnovaPool ⍬ ⍬ ⍬ ⍬ al {⍬}     ⍝ pool factors with an alpha ≥ than al
+     ⍝∇      AnovaPool ⍬ ⍬ ⍬ ⍬ ⍬ si       ⍝ pool factors lthat include these letters
+
+ ⎕ML←⎕IO←1
+ IsNumb←{1=2|⎕DR¨⍵}
+ To←{(×⍺-⍵)+⍺+(×⍵-⍺)×⍳1+|⍵-⍺}
+ ns←⎕NS''
+
+ abt mss fr il al si←6↑abt_mss_fr_il_al_si,⍬ ⍬ ⍬ ⍬ ⍬
+ select←⊃⍸abt mss fr il al si≢¨⊂⍬
+
+ list←NS.⎕NL ¯2
+ ⎕SHADOW list
+ ⍎(⍕list),'←NS.(',(⍕list),')'
+
+ AT←ANOVA_Table
+ head←Dutils.RemoveExcessBlanks¨AT[1;]
+ colnames←Dutils.RemoveExcessBlanks¨AT[;1]
+ kerr←colnames⍳⊂'error'
+ ktop←3
+ kbot←kerr-2
+ mask←(⍳≢AT)∊ktop To kbot
+
+ fac←mask/,AT Dutils.GetNamedColumns'Factor'
+ sos←mask/,AT Dutils.GetNamedColumns'Sum Sq.'
+ dof←mask/,AT Dutils.GetNamedColumns'DOF'
+ cms←mask/,AT Dutils.GetNamedColumns'Mean Sq.'
+ fra←mask/,AT Dutils.GetNamedColumns'F-ratio'
+ aph←mask/,AT Dutils.GetNamedColumns'⍺ signif.'
+
+ errsos errdof errms←AT[kerr;2 3 4]
+ :Select select
+ :Case 1          ⍝  all but n biggest MSs
+     io←⍒cms
+     kpool←abt↓io
+
+ :Case 2          ⍝  MS ≤ given value
+     maskms←cms≤mss
+     kpool←maskms/⍳≢cms
+
+ :Case 3          ⍝  Fratio  ≤ value
+     maskal←fra≤fr
+     kpool←maskal/⍳≢fra
+
+ :Case 4          ⍝  interaction levels:  3≡≡ABC CDE .. ABCD ... ABCDE ...
+     maskil←(≢¨fac)≥il
+     kpool←maskil/⍳≢fac
+
+ :Case 5          ⍝  alphas ≤ value
+     maskal←aph≥al
+     kpool←maskal/⍳≢aph
+
+ :Case 6          ⍝  factors w/ lthese letters
+     maskal←∨/¨fac∊¨⊂si
+     kpool←maskal/⍳≢fac
+
+ :Else
+     'Nothing specified for Apool.  Nothing done'
+     :Return
+
+ :EndSelect
+
+     ⍝  pool into error and select out the resultand table
+ newesos←errsos++/sos[kpool]
+ newedof←2 Dutils.RndDP errdof++/dof[kpool]
+ newems←4 Dutils.RndS newesos÷newedof
+
+ nr←(⍳≢AT)~2+kpool
+ at←AT[nr;]
+ colnames←colnames[nr]
+ ker←colnames⍳⊂'error'
+ at[ker;2 3 4]←newesos newedof newems
+
+     ⍝  now recalc F and ⍺
+ ka←2↓¯4↓(⍳≢at)
+ js jd jm jf ja←head⍳'Sum Sq.' 'DOF' 'Mean Sq.' 'F-ratio' '⍺ signif.'
+ at[ka;jf]←2 Dutils.RndDP at[ka;jm]÷newems
+ at[ka;ja]←3 Dutils.RndDP Distrib.Fratio_A¨at[ka;jf],¨at[ka;jd],¨newedof
+
+ ns.Pooled_ANOVA_Table←at

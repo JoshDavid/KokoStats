@@ -1,0 +1,25 @@
+ ntab←NormalTableOrder tab;⎕IO;r;c;n;w;m;k;⎕ML
+
+     ⍝∇     put the output anova table into normal format:
+     ⍝∇         A B AB   C AC BC ABC  D AD .....
+     ⍝∇     instead of the straight format it was created in:
+     ⍝∇         A B C D ....  AB AC AD..BC BD ....  ABC ABD .....
+
+ ⎕IO←1 ⋄ ⎕ML←1
+
+ r c←⍴tab
+ n←⌊2⍟(1.5+r)
+
+ w←CompleteComb n
+ m←⍴w
+ k←⍋↑(⌈/⍴¨w)↑¨⌽¨w
+
+     ⍝   SHOW 'X' X
+     ⍝   SHOW 'M' M
+     ⍝   SHOW 'W' W
+     ⍝   SHOW 'R C N' R C N
+     ⍝   SHOW 'Y' Y
+
+ ntab←tab[k;]
+
+ :Return

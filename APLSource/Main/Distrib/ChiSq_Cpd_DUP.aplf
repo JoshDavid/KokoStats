@@ -1,0 +1,28 @@
+ xs←ChiSq_Cpd_DUP(cumdf dof);Funx;⎕ML;⎕IO;y130;y140;y150;c
+
+     ⍝∇ Given:   cumdf (left-hand tail) and degress of freedom
+     ⍝∇ Return:  the critical value of ChiSquare
+     ⍝∇ Based on alpha  A&S 26.4.2
+
+ ⎕ML←1 ⋄ ⎕IO←1
+     ⍝ dof⌊←150
+ :If dof≤150
+     :If (dof=1)∧(cumdf<0.0001) ⋄ xs←0 ⋄ :Return ⋄ :EndIf              ⍝  at .9999 xs~1E¯7  and I can't compute anything higher
+     Funx←{cumdf-ChiSq_P ⍵ dof}
+     :If (dof=1)∧(cumdf<0.25)
+         Funx←{(1-cumdf)-ChiSq_Q ⍵ dof}                ⍝  P is more accurate than Q for dof=1  at very low P or big Q (alpha)
+     :EndIf
+     ⍝ alpha,Funx¨1E¯9 300
+     xs←Funx ##.Dutils.HalfStep 1E¯9 250 30
+ :Else
+     ⍝  for large dof, A&S 26.4.16  didn't work as I coded it.  Maybe I misunderstood something.
+     ⍝  but quadratically extapolating in log log space the values for dof = 130 140 and 150
+     ⍝  seems to have modest error for dof<600.  Sensible answers up to 100,000;  a million isn't so good!!!
+     ⍝  I used two sanity checks:  as you go down in alpha, the ChiSq should be close to dof at ⍺=.5; and
+     ⍝  the ChiSq should monotonically increase.  Over 700 they hold except for very wee ⍺s: .0005 and .0001
+     y130←ChiSq_Xa alpha 130
+     y140←ChiSq_Xa alpha 140
+     y150←ChiSq_Xa alpha 150
+     c←(10⍟y130 y140 y150)⌹(10⍟130 140 150)∘.*0 1 2
+     xs←10*c+.×(10⍟dof)∘.*0 1 2
+ :EndIf

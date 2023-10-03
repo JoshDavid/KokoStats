@@ -1,0 +1,15 @@
+ ix←IncBetaI(x nu1 nu2);ker;NON;⎕ML;⎕IO
+
+      ⍝∇ Incomplete Beta Function  A&S p944  26.5.1
+      ⍝∇ Given:    the abscissa, and two degrees of freedom
+
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ ker←{⍵=0:0 ⋄ (⍵*nu1-1)×(1-⍵)*nu2-1}
+ NON←100
+ :If (nu2≤4)∧(nu1≤1) ⋄ NON←1000 ⋄ :EndIf
+     ⍝ :If (nu2<2)∧(nu1<1) ⋄ NON←200000 ⋄ :EndIf
+
+ ix←(÷Beta nu1 nu2)×(ker ∆GQ)∆QUAD 0 x NON
+
+ :Return

@@ -1,0 +1,21 @@
+ Q←ChiSq_P(Xs dof);ker;hd;mult;int;To;NOP;⎕ML;⎕IO
+
+     ⍝∇  Given:   Critical ChiSquare and degrees of freedom
+     ⍝∇  Return:  the cumulative probability (integral from the left).
+     ⍝∇     A&S 26.4.2
+
+ ⎕ML←⎕IO←1
+
+ dof⌊←300
+ To←{(×⍺-⍵)×⍺+(×⍵-⍺)×⍳1+|⍵-⍺}
+ ker←{(⍵*hd-1)×*-⍵÷2}
+ hd←dof÷2
+ mult←÷(2*hd)×!hd-1
+ NOP←50                                      ⍝ adequate no. of panels for most computations
+ :If (dof=1)∧(Xs<0.4) ⋄ NOP←500 ⋄ :EndIf      ⍝ tighten up :: silly part of the chi-square space
+ :If (dof=1)∧(Xs<0.01) ⋄ NOP←5000 ⋄ :EndIf
+
+ int←(ker ##.Dutils.∆GQ)##.Dutils.∆QUAD 0 Xs NOP
+ Q←mult×int
+
+ :Return

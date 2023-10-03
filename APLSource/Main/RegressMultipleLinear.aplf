@@ -1,0 +1,77 @@
+ {NS}←{vnames}RegressMultipleLinear(y x);⎕ML;⎕IO;nd;X;ybar;xbar;nv;c;idof;cdof;tdof;edof;rdof;I;Ib;dl;as;a;CN;XTY;XTX;Yhat;ai;check;ns;nsc;nsr;nss;coeffs;const
+
+     ⍝∇ Given:   y -- the response variable
+     ⍝∇          x -- a nested vector of independent x variables
+     ⍝∇               N.B. if the first x is a vector of 1s, its
+     ⍝∇               coefficient is the "intercept".
+     ⍝∇               If not the solution is "forced thru the origin".
+     ⍝∇          vnames:  optional names for the y and x variables
+     ⍝∇             e.g.:  'ProductQuality' 'Intercept' 'Volume' 'Time' 'Weight' 'Conc_1'  'Conc_2'
+     ⍝∇ Result:  the coefficients of the regression
+     ⍝∇          other results are saved in the namespace:  Regress_NS
+     ⍝∇          this will include:  Anova for the analysis, various
+     ⍝∇          statistics, predictions, residuals, etc.
+
+ ⎕ML←⎕IO←1
+ NS←⎕NS''
+ const←∧/(⊃x)=1
+
+ :If 0=⎕NC'vnames'
+     vnames←'Y'
+     vnames,←const/⊂'Const'
+     vnames,←('X',¨⍕¨⍳¯1+≢x)
+ :EndIf
+
+ nd←≢y
+ X←↑[0.5]x
+ ybar←Dutils.Average y
+ xbar←⊃¨Dutils.Average¨x
+ nv←≢x
+
+     ⍝  although  c←y⌹X  does the job - because regression is particularly
+     ⍝  suseptible to degenerate cases (correlated x's), I prefer
+     ⍝  to solve the equations myself and monitor the pivots to estimate
+     ⍝  singularity (matrix condition).
+
+ :Trap 0
+     NS.Coefs_byQuadDivide←c←y⌹↑[0.5]x
+ :EndTrap
+
+     ⍝  is the first variable a vector of 1s
+ idof←∧/1=⊃x
+ cdof←nv-idof
+ tdof←nd
+ edof←tdof-nv
+ rdof←nd-idof
+
+ I←nd nd⍴1,nd⍴0
+ Ib←nv nv⍴1,nv⍴0
+
+ XTX←(⍉X)+.×X
+ XTY←(⍉X)+.×y
+
+ coeffs dl ai a check CN←XTY Dutils.SolveSLAE XTX
+
+ NS.Coefficients←coeffs
+ NS.ConditionNumber←CN
+ NS.DigitsLost←dl
+
+
+ NS.Y←y
+ NS.Xmatrix←X
+ NS.Yhat←Yhat←X+.×coeffs
+ NS.Residuals←y-Yhat
+ NS.Y_name←⊃vnames
+ NS.X_names←1↓vnames
+
+ nsc←Dutils.RegressCalc X y coeffs XTY XTX ai xbar ybar Ib vnames
+ nsr←Dutils.RegressResults nsc
+ nss←dl Dutils.RegressStats nsc
+
+ NS.X_CorrelationMatrix←(1↓vnames)CorrelMatrix↓[1]X
+ NS.Max_Covariance←nsc.max_cov
+
+ NS.(Results AnovaTable)←nsr.(Result AnovaR)
+ NS.(Statistics ResidualsTable)←nss.(Stats ResidTable)
+
+ :Return

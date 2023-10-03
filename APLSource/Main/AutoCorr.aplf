@@ -1,0 +1,15 @@
+ {ac}←AutoCorr x;y;i;⎕ML;⎕IO
+
+     ⍝∇ The autocorrelation of x (end held still) and x (front held still)
+     ⍝∇ Gives the correlation over time of recent history
+
+ ⎕ML←⎕IO←1
+ y←x
+ ac←⍬
+ :For i :In ¯3↓⍳≢x
+
+     ac,←Dutils.Corr x y
+     x←1↓x ⋄ y←¯1↓y
+ :EndFor
+
+ :Return

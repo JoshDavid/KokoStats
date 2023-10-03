@@ -1,0 +1,64 @@
+ {ns}←CrossTabs(v w);⎕ML;⎕IO;uv;uw;C;c;rt;ct;gt;e;er;chq;op;tp;rp;cp;tpf;tpb;tpt;rpf;rpb;rpt;cpf;cpb;ccf;ccb;cct;tc;dof;dcf;dcb;dct;dc;re;cer
+
+     ⍝∇   Do a cross-tabs or chi-square analysis: for catagorical data
+     ⍝∇   It is best to have the data coded into a small (<10) number of
+     ⍝∇   levels.
+     ⍝∇   99 is interpreted to mean missing data.  If both are 99 the
+     ⍝∇      data are eliminated.
+     ⍝∇   ¯1 is interpreted to mean that the respondent didn't answer
+     ⍝∇      the question, i.e., no response.  But obviously you can
+     ⍝∇      code responses to be interpreted any way you wish.
+
+ ⎕ML←⎕IO←1
+ ns←⎕NS''
+
+     ⍝  remove the 99s and makes sure they are integers
+ v w←⌊(⊂(v≠99)∧(w≠99))/¨v w
+
+ uv uw←{⍵[⍋⍵]}¨∪¨v w     ⍝ the levels of each variable
+
+     ⍝  The counted matrix.   Levels of v are rows; levels of w are the columns
+ c←(uv∘.=v)(+.×)(w∘.=uw)
+ rt←+/c ⋄ ct←+⌿c ⋄ gt←+/rt
+
+ e←(rt∘.×ct)÷gt          ⍝ what one would expect in each cell if all bets were equal
+ er←c-e                  ⍝ deviation from the expected distribution
+ cer←(¯1∊uv)↓(¯1∊uw)↓[2]er
+ chq←+/,cer*2             ⍝ the ChiSquare statistic
+ dof←¯1+×/⍴cer
+
+     ⍝  get percentages
+
+ tpf←('overall %' '---------',uv,'---------' 'Column %'),[1.5]('  ',((≢c)⍴'|'),'  ')
+ tpb←(uw⍪(⊂'----')⍪(0 Dutils.RndDP 100×c÷gt))⍪(⊂'----'),[0.5](0 Dutils.RndDP 100×ct÷gt)
+ tpt←('  ',((≢c)⍴'|'),' |'),[1.5](('Row %')('-----'),(0 Dutils.RndDP 100×rt÷gt),'----' '100')
+ tp←⍕tpf,tpb,tpt
+
+ rpf←('% per Row' '---------',uv),[1.5]('  ',((≢c)⍴'|'))
+ rpb←(uw⍪(⊂'----')⍪(0 Dutils.RndDP 100×c÷rt∘.×(⍴ct)⍴1))
+ rpt←('  ',((≢c)⍴'|')),[1.5](('Row %')('-----'),(0 Dutils.RndDP 100×rt÷gt))
+ rp←⍕rpf,rpb,rpt
+
+ cpf←('% per Col' '---------',uv,'---------' 'Column %'),[1.5]('  ',((≢c)⍴'|'),'  ')
+ cpb←(uw⍪(⊂'----')⍪(0 Dutils.RndDP 100×c÷↑(≢c)⍴⊂ct))⍪(⊂'----'),[0.5](0 Dutils.RndDP 100×ct÷gt)
+ cp←⍕cpf,cpb
+
+ ccf←('Counts  ' '-----------',uv,'-----------' 'Col. Totals'),[1.5]('  ',((≢c)⍴'|'),'  ')
+ ccb←(uw⍪(⊂'----')⍪c⍪(⊂'----'))⍪ct
+ cct←(('  '),((≢uv)⍴⊂'|'),' |'),[1.5](('Row Totals')('----------'),rt,'----------'gt)
+ tc←ccf,ccb,cct
+
+ re←⍎¨(⊂15 2)⍕¨cer
+ dcf←('Deltas  ' '-----------',(uv~¯1),'-----------' 'Col. Totals'),[1.5]('  ',((≢cer)⍴'|'),'  ')
+ dcb←((uw~¯1)⍪(⊂'----')⍪re⍪(⊂'----'))⍪(+⌿|re)
+ dct←(('  '),((≢(uv~¯1))⍴⊂'|'),' |'),[1.5]('Row Totals')('----------'),(+/|re),'----------'(+/,|re)
+ dc←dcf,dcb,dct
+
+ ns.CT_ChiSquare_DOF←chq dof
+ ns.CT_Alpha←Distrib.ChiSq_A chq dof
+ ns.CT_Cell_Counts←tc
+ ns.CT_OverallPercents←tp
+ ns.CT_RowPercents←rp
+ ns.CT_ColumnPercents←cp
+ ns.CT_Deltas←dc
+ :Return

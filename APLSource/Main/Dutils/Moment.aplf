@@ -1,0 +1,11 @@
+ mom←Moment args;diff;sigma;power;r;⎕ML;⎕IO
+
+     ⍝∇ calculate the moment of a vector of differences, wrt. sigma,
+     ⍝∇    at some  power
+
+ ⎕ML←⎕IO←1
+ diff sigma power←args
+ r←≢diff
+ mom←((+/diff*power)÷r)÷{⍵+⍵=0}(sigma*power)
+
+ :Return

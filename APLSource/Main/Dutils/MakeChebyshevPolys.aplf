@@ -1,0 +1,11 @@
+ cp←MakeChebyshevPolys(x order);i;⎕ML;⎕IO
+
+     ⍝∇   Create a bunch of chebyshev polylnomials recursively; given x and order
+     ⍝∇   The first two columns are 1 and x;  therefore, there will be order+1 columns
+
+ ⎕ML←⎕IO←1
+
+ cp←1,[1.5]x
+ :For i :In 2↓⍳order+1
+     cp,←(2×x×cp[;i-1])-cp[;i-2]
+ :EndFor

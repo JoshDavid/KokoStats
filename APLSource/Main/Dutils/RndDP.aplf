@@ -1,0 +1,13 @@
+ z←n RndDP v;⎕ML;⎕IO
+
+     ⍝∇  round to a given no. of decimal places by formatting:  23.35  ←  2 RndDP  23.34567
+
+ ⎕ML←⎕IO←1
+ :If 2≤⍴⍴v ⋄ z←(⍴v)⍴n RndDP,v ⋄ :Return ⋄ :EndIf
+
+ :Trap 0
+     z←⍎30 n⍕v
+ :Else
+     z←⍬
+ :EndTrap
+ :Return

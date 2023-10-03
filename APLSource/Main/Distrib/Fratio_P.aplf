@@ -1,0 +1,11 @@
+ P←Fratio_P(F dn dd);x;⎕ML;⎕IO
+
+     ⍝∇   Given:   a Critical_Fratio value, the numerator and denominator degress of freedom
+     ⍝∇   Return:  cumulative probability (area from -infinity to F)
+     ⍝∇   A&S  26.6.2  p946
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ x←dd÷dd+F×dn
+ P←1-##.Dutils.IncBetaI x,0.5×dd dn
+
+ :Return

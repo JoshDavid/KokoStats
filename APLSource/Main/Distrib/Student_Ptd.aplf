@@ -1,0 +1,54 @@
+ p←Student_Ptd(t dof);mult;ker;int;a;b;⎕ML;⎕IO;th;sum;k;i;n;d;z
+
+     ⍝∇   the left integral (leaving only the right tail) for the Student t
+
+ ⎕ML←1 ⋄ ⎕IO←1
+      ⍝∇ for big t and small dof
+ :If (t>20)∧(dof=1)    ⍝  A&S  26.7.7  p949
+     a b←dof⊃(0.3183 0)(0.4991 0.0518)(1.1094 ¯0.046)(3.0941 ¯2.756)(9.948 ¯14.05)
+     p←1-+/a b÷t*dof dof+0 1
+     :Return
+ :EndIf
+
+ th←¯3○t÷dof*0.5
+
+     ⍝∇      A&S  26.7.3 (odd dof)  p948
+ :If dof=1 ⋄ p←1-0.5×1-2×th÷○1 ⋄ :Return ⋄ :EndIf
+ :If 2|dof
+     sum←2○th
+     k←1↓{(2|⍵)/⍵}⍳dof-2
+     :For i :In k
+         n←2×⍳⌊i÷2
+         d←1+n
+         sum+←z←(×/n÷d)×((2○th)*i)
+     ⍝           'odd'##.Dutils.Watcher dof i n d z sum
+     :EndFor
+     p←(2÷○1)×th+sum×(1○th)
+     p←1-0.5×1-p
+ :Else
+     ⍝∇      A&S  26.7.4 (even dof)   p948
+     sum←1
+     k←{(~2|⍵)/⍵}⍳dof-2
+     :For i :In k
+         d←2×⍳i÷2
+         n←¯1+d
+         sum+←z←(×/n÷d)×((2○th)*i)
+     ⍝           'even'##.Dutils.Watcher dof i n d z sum
+     :EndFor
+     p←sum×1○th
+     p←1-0.5×1-p
+ :EndIf
+
+ :Return
+
+     ⍝  the following code is much much slower
+
+
+     ⍝∇  A&S  26.7.1  p948
+
+ mult←÷(dof*0.5)×##.Dutils.Beta 1 dof÷2
+ ker←{(1+dof÷⍨⍵*2)*-0.5×dof+1}
+ int←ker ##.Dutils.∆GQ ##.Dutils.∆QUAD(-t)t 5000
+ p←mult×int
+ p←1-0.5×1-p
+ :Return

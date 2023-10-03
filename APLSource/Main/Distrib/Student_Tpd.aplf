@@ -1,0 +1,12 @@
+ t←Student_Tpd(p dof);Fun;⎕ML;⎕IO
+
+     ⍝∇  dof ← Student_T (p dof)  -- critical t given p and degrees-of-freedom
+     ⍝∇                    alpha is the "tail" area  alpha = 1-p (the cumulative
+     ⍝∇                    distribution )
+
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ Fun←{p-Student_P ⍵ dof}
+ t←Fun ##.Dutils.HalfStep 0 100000 40
+
+ :Return

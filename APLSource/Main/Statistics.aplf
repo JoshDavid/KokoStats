@@ -1,0 +1,47 @@
+ ns←{names}Statistics vov;⎕ML;⎕IO;data;n;r;sum;sos;sum_of_squares;average;std_dev;sigma;diff;skew;kurtosis;max;min;coefficient_of_variation;pct_zero;pct_near_zero;std_error;table;statistics;stats;under;w;title;statistics_table;headr;bn;count
+
+     ⍝∇ Calculate general statistics for a vector-of-vectors of data
+ ⎕ML←⎕IO←1
+ ns←⎕NS''
+
+ data←vov                 ⍝ keep original data just in case
+ n←≢data
+ r←≢¨data
+
+ sum←Dutils.SumByTwos¨data
+ sos←sum_of_squares←Dutils.SumByTwos¨data×data
+ average←Dutils.Average¨data
+ std_dev←(|(sos-(sum*2)÷r)÷r-1)*0.5
+ sigma←(|(sos-(sum*2)÷r)÷r)*0.5
+
+ diff←data-¨average
+ skew←Dutils.Moment¨(⊂¨diff),¨sigma,¨3
+ kurtosis←Dutils.Moment¨(⊂¨diff),¨sigma,¨4
+ count←≢¨data
+ max←⌈/¨data
+ min←⌊/¨data
+
+ coefficient_of_variation←¯9999.99⌈9999.99⌊100×(std_dev÷average+average=0)×average≠0
+ ((average≤0.000001×std_dev)/coefficient_of_variation)←¯1
+ pct_zero←1 Dutils.RndDP 100×(+/¨data=0)÷r
+ pct_near_zero←1 Dutils.RndDP 100×(+/¨0.000001>|data)÷r
+ std_error←std_dev÷r*0.5
+
+ statistics←{(⍳≢⍵),⍵}⍉↑count average min max std_dev skew kurtosis coefficient_of_variation pct_zero pct_near_zero
+
+ stats←{(↑(⊂4 0)⍕¨⍳≢⍵),⍵}(11 0 13 4 13 4 13 4 13 4 8 2 8 2 10 2 6 1 6 1){⍺⍕⍵}⍉↑count average min max std_dev skew kurtosis coefficient_of_variation pct_zero pct_near_zero
+
+ headr←'  V#  # of data    Average      Minimum      Maximum     Std. Dev.    Skew    Kurt.  Coef.Var   %0    %~0  '
+ under←' ===  =========  ===========  ===========  ===========  ===========  ======  ======  ========  ====  ====  '
+ w←≢headr
+ title←w↑((⌊0.5×w-16)↑' '),'Basic Statistics'
+ statistics_table←title⍪headr⍪under⍪w↑[2]stats
+ :If 0=⎕NC'names' ⋄ names←(⊂'Var_'),¨⍕¨⍳n ⋄ :EndIf
+ bn←2+5⌈⌈/≢¨names
+ statistics_table,←' '⍪(bn↑'  Names')⍪('  ',2↓bn⍴'=')⍪(↑bn↑¨(⊂'  '),¨(bn)↑¨names)
+
+ ns.(count average min max std_dev skew kurtosis coefficient_of_variation pct_zero pct_near_zero names)←count average min max std_dev skew kurtosis coefficient_of_variation pct_zero pct_near_zero names
+ ns.(StatisticsTable Data_vov DataMatrix Statistics_numerical)←statistics_table data(⍉↑data)statistics
+ ns.CorrelationMatrix←names CorrelMatrix vov
+
+ :Return

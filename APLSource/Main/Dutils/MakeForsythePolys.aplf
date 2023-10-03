@@ -1,0 +1,33 @@
+ (fx co)←MakeForsythePolys(x order);⎕ML;⎕IO;on;n;zo;ave;zi;zossum;zissum;gam;del;zn
+
+      ⍝∇ make forsythe polynomials (recursively) based on X and of hightest power: order
+      ⍝∇    that will be order+1 columns as the firat column will be 1s.
+
+ ⎕ML←⎕IO←1
+ on←1+order
+ n←≢x
+
+     ⍝                   f  will be the model with order+1 variables (columns)
+     ⍝                   f1 will be ones
+     ⍝                   f2 will be the 1st Forsythe Polynomial:  x-xave
+     ⍝                   fn will be the (n-1)th order Forsythe polynomial
+
+ zo←n⍴1
+ ave←Average x
+ zi←x-ave
+
+ fx←zo,[1.5]zi
+ co←1 2⍴ave 0
+ :For i :In 2↓⍳on
+     zossum←SumByTwos zo*2
+     zissum←SumByTwos zi*2
+     gam←(SumByTwos x×zi*2)÷zissum
+     del←(SumByTwos x×zi×zo)÷zossum
+     zn←(zi×x-gam)-del×zo
+     zo←zi
+     zi←zn
+     fx,←zn
+     co⍪←gam del
+ :EndFor
+
+ :Return

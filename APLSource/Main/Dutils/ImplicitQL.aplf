@@ -1,0 +1,61 @@
+ (a d e z)←ImplicitQL(v a d e n);l;j;m;p;eps;g;r;s;c;i;f;b;ia;To;⎕ML;⎕IO
+
+     ⍝∇      A←QL where Q is orthagonal and L is lower triangular
+     ⍝∇      plinked from GLIB:EIGPAK
+     ⍝∆      FROM NUMERISCHE MATHEMATIK 12, 337-383 (1968)
+
+ ⎕ML←⎕IO←1
+
+ To←{(×⍺-⍵)+⍺+(×⍵-⍺)×⍳1+|⍵-⍺}
+ eps←16*¯13
+ e←1⌽e
+ ia←⍳n
+ j←0
+ :For l :In ⍳n-1
+TryAgain:
+     m←(l-1)↓⍳n-1
+     m←(l-1)+((|e[m])≤eps×((|d[m])+|d[m+1]))⍳1
+     p←d[l]
+     :If m=l ⋄ j←0 ⋄ :Continue ⋄ :EndIf
+     j+←1
+     :If 30<j ⋄ 'Routine has failed.  Returns Eigenvalues found so far.' ⋄ l-←2 ⋄ :Leave ⋄ :EndIf
+     r←4○g←(d[l+1]-p)÷2×e[l]
+     g←d[m]+(e[l]÷g+r×1-2×g<0)-p
+     s←c←1
+     p←d[m]
+     i←m
+     :For i :In (m-1)To l
+         f←s×e[i]
+         b←c×e[i]
+         :If </|f g
+             e[i+1]←g×r←4○c←f÷g
+             s←c÷r
+             c←÷r
+     ⍝                'gb'Watcher i l j g s c f b(e[i+1])
+
+         :Else
+             e[i+1]←f×r←4○c←g÷f
+             c←c×s←÷r
+     ⍝                'gs'Watcher i l j g s c f b(e[i+1])
+
+         :EndIf
+         r←d[i]+p
+         p←(c×f←(c×d[i])-s×b)-s×g←(c×b)-s×p
+         g←(s×f)+c×g
+         d[i+1]←r-p
+         :If v
+             a[ia;i+0 1]←a[ia;i+0 1]+.×2 2⍴c,s,(-s),c
+         :EndIf
+     ⍝           'el'Watcher i l j g s c f b r p(e[i])(d[i+1])
+
+     :EndFor  ⍝ on i
+     d[l]←p
+     e[l]←g
+     e[m]←0
+     :GoTo TryAgain
+ :EndFor
+
+ z←(l+1)↑d
+ a←((l+1),n)↑a
+
+ :Return

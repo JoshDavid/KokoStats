@@ -1,0 +1,14 @@
+ erf←Erf x;kernel;f;⎕ML;⎕IO
+     ⍝  this is good to at least 12 and usually more digits
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ kernel←{*-⍵*2}
+ f←(2÷(○1)*0.5)
+
+ :If x≤4.06
+     erf←f×kernel Romberg_Trap 0 x
+ :Else
+     erf←1-f×kernel Romberg_Trap x 50
+ :EndIf
+
+ :Return

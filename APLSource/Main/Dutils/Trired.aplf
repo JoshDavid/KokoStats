@@ -1,0 +1,78 @@
+ (a d e)←Trired(v a n);i;l;f;g;h;j;hh;⎕ML;⎕IO
+
+     ⍝∇    Triangular reduction
+     ⍝∇    plinked from GLIB:EIGPAK
+     ⍝∇    FROM NUMERISCHE MATHEMATIK 11, 181-195 (1968)
+
+     ⍝ Watcher_right
+ ⎕ML←⎕IO←1
+
+ d←e←n⍴0
+ l i j←¯1
+ :For i :In (⌽1↓⍳n)
+     l←i-2
+     h←(g←+/a[i;⍳l]*2)+(f←a[i;i-1])*2
+     ⍝      'lijhgf'Watcher l i j h g f
+     :If g<1E¯38
+         e[i]←f
+         d[i]←h←0
+     ⍝           'lijhgf'Watcher l i j h g f
+     ⍝           'eee'Watcher e
+     ⍝           'ddd'Watcher d
+     ⍝           'ouch'l i h g f
+     :Else
+
+         l+←1
+         h←h-f×g←e[i]←(h*0.5)×1-2×f≥0
+         a[i;i-1]←f-g
+         f←0
+     ⍝           'lijhgf'Watcher l i j h g f
+     ⍝           'eee'Watcher e
+     ⍝           'ddd'Watcher d
+         :For j :In ⍳l
+             a[j;i]←a[i;j]÷h
+             e[j]←(g←(a[j;⍳j]+.×a[i;⍳j])+(a[j+⍳l-j;j]+.×a[i;j+⍳l-j]))÷h
+             f←f+g×a[j;i]
+     ⍝                'lijhgf'Watcher l i j h g f
+     ⍝                'eee'Watcher e
+     ⍝                'ddd'Watcher d
+         :EndFor
+         hh←f÷h+h
+
+         :For j :In ⍳l
+             g←e[j]←e[j]-hh×f←a[i;j]
+             a[j;⍳j]←a[j;⍳j]-(f×e[⍳j])+g×a[i;⍳j]
+     ⍝                'lihgf'Watcher l i h g f
+     ⍝                'eee'Watcher e
+     ⍝                'ddd'Watcher d
+         :EndFor
+         d[i]←h
+     :EndIf
+     ⍝      'lijhgf'Watcher l i j h g f
+     ⍝      'eee'Watcher e
+     ⍝      'ddd'Watcher d
+
+ :EndFor
+
+ :If 1≠v
+     d←1 1⍉a
+     :Return
+ :Else
+     :For i :In ⍳n
+         l←i-1
+         :If 0≠d[i]
+             a[⍳l;⍳l]←a[⍳l;⍳l]-a[⍳l;i]∘.×a[i;⍳l]+.×a[⍳l;⍳l]
+         :EndIf
+         d[i]←a[i;i]
+         a[i;i]←1
+         a[i;⍳l]←a[⍳l;i]←0
+     ⍝           'lihgf'Watcher l i h g f
+     ⍝           'eee'Watcher e
+     ⍝           'ddd'Watcher d
+     :EndFor
+ :EndIf
+
+     ⍝ Watcher_middle
+     ⍝ 'zlihgf'Watcher l i h g f
+     ⍝ 'zeee'Watcher e
+     ⍝ 'zddd'Watcher d

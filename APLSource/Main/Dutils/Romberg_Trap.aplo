@@ -1,0 +1,37 @@
+ Z←(F Romberg_Trap)(low_lim high_lim);Improve;x;sum;∆x;nx;xn;A;B;C;D;n;⎕ML;⎕IO
+
+⍝∇   Apply Romberg technique to integration based on trapazoidal quadrature:
+⍝∇      if an integrator has an order n with a step size of h, and two areas
+⍝∇      are computed at 2h and h (Ab As) then an improved value can be had:
+⍝∇      Ai ← (2*n)As - Ab ÷ (2*n - 1)
+
+⍝  the trapazoidal integration is A1 ← .5 × (B-A)× +/F¨ A B  for one step
+⍝  but at more steps it is   sum←+/.5 1 1 1 ... 1 1 1 .5 × F¨x  and A←∆x×sum
+⍝  at the next interval halving ∆x←.5×∆x and  sum←sum+F¨x at the mid-points
+⍝  therefore: keep track of x, sum, ∆x
+⍝  experiments indicate that C is far enough
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ Improve←{((d×2⊃⍵)-⊃⍵)÷¯1+d←2*⍺}
+ x←low_lim high_lim
+ sum←0.5×+/F¨x
+ ∆x←high_lim-low_lim
+ n←1
+ A←∆x×sum
+ B←C←D←⍬
+
+ :Repeat
+     n×←2
+     ∆x←0.5×∆x
+     nx←¯1+≢x
+     xn←low_lim+(2×∆x×⍳nx)-∆x
+     sum+←SumByTwos F¨xn
+     x←low_lim+∆x×0,⍳2×nx
+     A,←∆x×sum
+     B,←2 Improve ¯2↑A
+     :If 2≤≢B ⋄ C,←4 Improve ¯2↑B ⋄ :EndIf
+⍝      :If 2≤≢C ⋄ D,←8 Improve ¯2↑C ⋄ :EndIf
+ :Until n>1000000
+ :OrIf (=/¯2↑B)∧(2≤≢B)
+ :OrIf (=/¯2↑C)∧(2≤≢C)
+ Z←⊃⌽C

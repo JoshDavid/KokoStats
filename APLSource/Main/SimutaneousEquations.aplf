@@ -1,0 +1,13 @@
+ {(xans dl)}←SimutaneousEquations(A R);ai;a;check;CN;⎕ML;⎕IO
+
+     ⍝∇   Solve a set of simultaneous eqns:
+     ⍝∇        aw + bx + cy + dz = r1        a b c d
+     ⍝∇        ew + fx + gy + hz = r2   A ≡≡ e f g h   R ≡≡ r1 r2 r3 r4  Ans ≡≡ w x y z
+     ⍝∇        iw + jx + ky + lz = r3        i j k l
+     ⍝∇        mw + nx + oy + pz = r4        m n o p
+
+ ⎕ML←⎕IO←1
+
+ xans dl ai a check CN←R Dutils.SolveSLAE A
+
+ :Return

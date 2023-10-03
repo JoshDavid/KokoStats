@@ -1,0 +1,55 @@
+ {ns}←{vnames}RegressPolynomial(y x order);⎕ML;⎕IO;nd;nv;xbar;ybar;X;idof;cdof;tdof;edof;rdof;I;Ib;XTX;XTY;coeffs;dl;ai;a;check;CN;Yhat;nsc;nsr;nss
+
+     ⍝∇ do a regular y←a+bx+cx^2+dx^3... regression
+
+ ⎕ML←⎕IO←1
+ ns←⎕NS''
+
+ nd←≢y
+ nv←order+1
+
+ :If 0=⎕NC'vnames' ⋄ vnames←'Y' 'Const',('X',¨⍕¨⍳nv-1) ⋄ :EndIf
+
+ xbar←Dutils.Average x
+ ybar←Dutils.Average y
+
+ X←x∘.*0,⍳order
+
+      ⍝   the first variable is a vector of 1s
+ idof←1
+ cdof←nv-idof
+ tdof←nd
+ edof←tdof-nv
+ rdof←nd-idof
+
+ I←nd nd⍴1,nd⍴0
+ Ib←nv nv⍴1,nv⍴0
+
+ XTX←(⍉X)+.×X
+ XTY←(⍉X)+.×y
+
+ coeffs dl ai a check CN←XTY Dutils.SolveSLAE XTX
+
+ ns.Coefficients←coeffs
+ ns.ConditionNumber←CN
+ ns.DigitsLost←dl
+
+
+ ns.Y←y
+ ns.X←x
+ ns.Xmatrix←X
+ ns.Yhat←Yhat←X+.×coeffs
+ ns.Residuals←y-Yhat
+ ns.X_CorrelationMatrix←(1↓vnames)CorrelMatrix X
+
+ nsc←Dutils.RegressCalc X y coeffs XTY XTX ai xbar ybar Ib vnames
+ nsr←Dutils.RegressResults nsc
+ nss←dl Dutils.RegressStats nsc
+ ns.MaxCovariance←nsc.max_cov
+
+ ns.(Results AnovaTable)←nsr.(Result AnovaR)
+ ns.(Statistics ResidualsTable)←nss.(Stats ResidTable)
+ ns.Coefs_byQuadDivide←y⌹X
+
+ ns.Y_name←⊃vnames
+ ns.X_names←1↓vnames

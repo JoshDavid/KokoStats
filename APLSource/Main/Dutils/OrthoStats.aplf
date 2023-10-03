@@ -1,0 +1,112 @@
+ nss←OrthoStats nsc;Divide;Rnd;list;N;NT;NB;BIG_E;WB_E;PC_E;BIGPC_E;WB_PCE;INDIV_Z;GIZ;WHICH_BIG;SORT;DURB;EQUAL_VAR;ERR_CORR;ERR_PATRN;NO_RUNS;NO_ABOVE;NO_BELOW;SIGN_RAT;SIGN_MU;SIGN_SIG;SIGN_Z;WHICH_INFL;R_TABLE;R_T;DIGITS_LOST;PERC_EXP;Stats;COOK;WI_C;AP_Q;WI_Q;AP_FIRST;AP_SECOND;AP_STAT;WI_1;WI_2;WI_S;R;SW;in;tr;bp;bod;TU;TT;⎕ML;⎕IO
+
+     ⍝∇  collect results on the data points
+
+ ⎕ML←⎕IO←1
+ Divide←{({⍵+⍵=0}⍺)÷{⍵+0.000001000001×⍵=0}⍵}
+ Rnd←{⍎30 ⍺⍕⍵}
+ nss←⎕NS''
+
+     ⍝  this makes the notation for what is in nsc easier
+ list←nsc.⎕NL ¯2
+ ⎕SHADOW list
+ ⍎(⍕list),'←nsc.(',(⍕list),')'
+
+ N←≢y
+ NT←6⌊N
+ NB←≢b
+
+ BIG_E←⌈/|errs
+ WB_E←NT↑⍒|errs
+ PC_E←3 Rnd 100×¯1⌈1⌊errs Divide(|yhat)
+ BIGPC_E←⌈/|PC_E
+ WB_PCE←NT↑⍒|PC_E
+ INDIV_Z←3 RndD(errs Divide serr)
+ GIZ←⍋|INDIV_Z
+ WHICH_BIG←(2.5<|INDIV_Z[GIZ])/(⍳N)[GIZ]
+
+ SORT←errs[⍋yhat]
+ DURB←2 Rnd(+/((1↓SORT)-(¯1↓SORT))*2)Divide+/SORT*2
+
+ EQUAL_VAR←4 Rnd((¯10000000000⌈10000000000⌊errs)*2)+.×(¯10000000000⌈10000000000⌊yhat)
+ ERR_CORR←4 Rnd(errs+.×yhat)
+ ERR_PATRN←4 Rnd(errs+.×yhat*2)
+ NO_RUNS←4 Rnd(1++/(¯1↓errs<0)≠(1↓errs<0))
+ NO_ABOVE←+/errs>0
+ NO_BELOW←+/errs<0
+ SIGN_RAT←3 Rnd(NO_ABOVE Divide NO_BELOW+NO_BELOW=0)
+ SIGN_MU←1+(2×NO_ABOVE×NO_BELOW)Divide(NO_ABOVE+NO_BELOW)
+ SIGN_SIG←(2×NO_ABOVE×NO_BELOW)×((2×NO_ABOVE×NO_BELOW)-(NO_ABOVE+NO_BELOW))Divide(((NO_ABOVE+NO_BELOW)*2)×(NO_ABOVE+NO_BELOW-1))
+ SIGN_Z←2 Rnd(NO_RUNS+0.5-SIGN_MU)Divide SIGN_SIG*0.5
+ R←1 1⍉fp+.×⍉(inv)×[2]fp
+ COOK←100×((errs Divide serr×(|1E¯20+1-R)*0.5)*2)×(R Divide(1E¯20+1-R))Divide NB
+ WI_C←NT↑⍒|COOK
+ COOK←0 RndD(100×COOK)
+ AP_Q←10×(1E¯10⌈|(1 Divide(1E¯20+1-R))×errs*2)Divide msar
+ WI_Q←NT↑⍒|AP_Q
+ AP_FIRST←1-(¯10000000000⌈10000000000⌊AP_Q)Divide(1E¯10⌈soser)
+ AP_SECOND←1-R
+ AP_STAT←AP_FIRST×AP_SECOND
+ AP_Q←0 RndD AP_Q
+ AP_FIRST←0 RndD(100×1-AP_FIRST)
+ WI_1←NT↑⍒|AP_FIRST
+ AP_SECOND←0 RndD(100×1-AP_SECOND)
+ WI_2←NT↑⍒|AP_SECOND
+ AP_STAT←0 RndD(100×1-AP_STAT)
+ WI_S←NT↑⍒|AP_STAT
+
+ WHICH_INFL←(1↑WB_E)(1↑WB_PCE)(1↑WI_C)(1↑WI_Q)(1↑WI_1)(1↑WI_2)(1↑WI_S)
+
+ R_T←(⍳N),x,y,(⍎¨3⍕¨yhat),(⍎¨3⍕¨errs),(⍎¨1⍕¨PC_E),(⍎¨3⍕¨INDIV_Z),(COOK),(AP_Q),(AP_FIRST),(AP_SECOND),[1.5](AP_STAT)
+ TU←'---' '------' '------' '------' '------' '------' '------' '------' '----' '----' '----' '----'
+ TT←' i ' '    x ' '    y ' ' y_hat' ' resid' ' % err' ' res_z' ' Cook ' 'AP q' 'AP 1' 'AP 2' ' AP '
+ R_T←TT⍪TU⍪R_T
+
+ ERR_CORR←4 Rnd(ERR_CORR×0.000001<|ERR_CORR)
+ PERC_EXP←2 Rnd(100×mrcsq)
+
+ DIGITS_LOST←0
+ :Trap 0
+     in←⌹(⍉fp)+.×fp
+     tr←1 1⍉in
+     bp←⌈/|tr
+     in÷←bp
+     (1 1⍉in)←0
+     bod←⌈/,|in
+     DIGITS_LOST←0⌈17+10⍟|bod
+ :EndTrap
+
+ SW←110
+ Stats←27 SW⍴' '
+ Stats[1;]←SW↑'equal var. stat.       ',⍕EQUAL_VAR
+ Stats[2;]←SW↑'correl. error stat.    ',⍕ERR_CORR
+ Stats[3;]←SW↑'patterned err. stat.   ',⍕ERR_PATRN
+ Stats[4;]←SW↑'no. positive errors    ',⍕NO_ABOVE
+ Stats[5;]←SW↑'no. negative errors    ',⍕NO_BELOW
+ Stats[6;]←SW↑'error sign ratio       ',⍕SIGN_RAT
+ Stats[7;]←SW↑'sign pattern z         ',⍕SIGN_Z
+ Stats[8;]←SW↑'               influential residuals: most→less '
+ Stats[9;]←SW↑'largest residuals      ',6 0⍕WB_E
+ Stats[10;]←SW↑'largest % residuals    ',6 0⍕WB_PCE
+ Stats[11;]←SW↑'   (outliers)  Q       ',6 0⍕WI_Q
+ Stats[12;]←SW↑'   (outliers)  AP 1    ',6 0⍕WI_1
+ Stats[13;]←SW↑'   (remote)    AP 2    ',6 0⍕WI_2
+ Stats[14;]←SW↑'   (AP1×AP2)   AP      ',6 0⍕WI_S
+ Stats[15;]←SW↑'   (coeffnts.) Cook    ',6 0⍕WI_C
+ Stats[16;]←SW↑'biggest covariance     ',⍕max_cov
+ Stats[17;]←SW↑' '
+ Stats[18;]←SW↑'big err. : index       ',(⍕BIG_E),' : ',4 0⍕1↑WB_E
+ Stats[19;]←SW↑'big % err. : index     ',(⍕BIGPC_E),' : ',4 0⍕1↑WB_PCE
+ Stats[20;]←SW↑'errors having z>2.5    ',6 0⍕WHICH_BIG
+ Stats[21;]←SW↑'Durbin Watson stat.    ',⍕DURB
+ Stats[22;]←SW↑'digits lost            ',⍕DIGITS_LOST
+ Stats[23;]←SW↑'multpl. reg. coeff.    ',⍕mrc
+ Stats[24;]←SW↑'% var. explained       ',⍕PERC_EXP
+ Stats[25;]←SW↑'std. err. (sigma)      ',⍕serr
+ Stats[26;]←SW↑'total variance in y    ',⍕sostc÷N
+ Stats[27;]←SW↑'unexplained var.       ',⍕soser÷N
+
+ nss.Stats←Stats
+ nss.ResidTable←R_T
+ nss.DL←DIGITS_LOST
+     ⍝ EOR

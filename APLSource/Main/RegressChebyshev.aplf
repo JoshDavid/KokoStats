@@ -1,0 +1,110 @@
+ {ns}←{vnames}RegressChebyshev(y x order);xm;⎕ML;⎕IO;To;io;nd;xM;cl;cheb_x;hr;sx;xsf;nsf;fp;fx;fbc;i;xhw;xc;cx;cp;cb;cy;chp;chc;cyhat;cxo;nsoc;nsoo;nsos;xtx;inv;xty;X;Y;XTX;XTY;res;cop;coyhat;fb;digl;cr
+
+     ⍝∇  Given:   y -- dependent (response) variable
+     ⍝∇           x -- independent vector
+     ⍝∇           order -- the highest power in the Cheb. polynomials
+     ⍝∇           vnames -- optional names for y and x (will default to Y X)
+     ⍝∇  Result:  Chebyshev polynomial coefficients of the regression.
+     ⍝∇           The advantage of Chebyshev polynomials is that they are
+     ⍝∇           independent and orthogonal AND the coefficients are
+     ⍝∇           interpretable: intercept, slope, curve, cubic wiggle, etc.
+
+     ⍝ because the CPs are defined on particular points on the x axis, they won't
+     ⍝ match the given x's.  So, get a Forsythe ortogonal regression first (based
+     ⍝ on the x's), do regressions of the forsythe polynomials to find out what
+     ⍝ they are, (couldn't find any closed, recursive formula), and then get
+     ⍝ Forsythe y's at the Chebyshev x's and do the regression.
+
+ ⎕ML←⎕IO←1
+
+ To←{(×⍺-⍵)+⍺+(×⍵-⍺)×⍳1+|⍵-⍺}
+ ns←⎕NS''
+ :If 0=⎕NC'vnames' ⋄ vnames←'Y' 'X' ⋄ :EndIf
+
+ io←⍋x
+ x←x[io]     ⍝ make sure x is monotonic
+ y←y[io]
+ nd←≢y
+ xM←⌈/x ⋄ xm←⌊/x
+ hr←0.5×xM-xm     ⍝ range
+ cl←0.5×xM+xm     ⍝ center
+
+ cheb_x←Dutils.MakeChebyshevPolynomialX 0 nd
+ hr÷←¯1↑cheb_x
+ sx←(cl,1)÷hr
+ xsf←(x-cl)÷hr
+
+ nsf←vnames RegressForsythe(y x order)
+ ns.Forsythe_ns←nsf
+ fp←nsf.ForsythePolynomialsOnX
+ fx←fp[;2]
+ fbc←,⊂(0 1)             ⍝  "x" is centered.
+      ⍝  get regressions for fp[;i]
+ :For i :In 3 To order+1
+     :Trap 0
+         fbc,←⊂fp[;i]⌹fx∘.*¯1+⍳i
+     :Else
+         X←fx∘.*¯1+⍳i ⋄ Y←fp[;i]
+         XTX←(⍉X)+.×X ⋄ XTY←Y+.×X
+         res digl←2↑XTY Dutils.SolveSLAE XTX
+         fbc,←⊂res
+     :EndTrap
+ :EndFor
+     ⍝ Scale the cheb_x locations to span fx:  cheb_x spans ¯1 to 1
+ xM←⌈/fx ⋄ xm←⌊/fx
+ xhw←0.5×xM-xm     ⍝ range
+ xc←0.5×xM+xm     ⍝ center
+
+ cx←xc+xhw×cheb_x
+
+     ⍝ Use the fbs to get cp
+ cp←1,[1.5]cx
+ :For i :In 2 To order
+     cp,←(cx∘.*0,⍳i)+.×i⊃fbc
+ :EndFor
+
+     ⍝ Use the fbs to get cp
+ fb←1,[1.5]fx
+ :For i :In 2 To order
+     fb,←(fx∘.*0,⍳i)+.×i⊃fbc
+ :EndFor
+
+ cy←cp+.×nsf.Coefficients
+     ⍝  we now have an x and y to use:  cheb_x and cy
+     ⍝  make the Chebyshev Polynmomials
+ chp←Dutils.MakeChebyshevPolys cheb_x order
+ chc←cy⌹chp
+ cyhat←chp+.×chc
+ cop←Dutils.MakeChebyshevPolys fx order
+ coyhat←cop+.×chc
+ cxo←cx+xhw+⊃x    ⍝  this corresponds to x
+ xtx←+⌿chp*2
+ xty←cy+.×cxo
+ inv←÷{⍵+0.000001000001×⍵=0}xtx
+
+
+     ⍝  The plots of x:y x:Yhat and cxo:cyhat  should make sense
+     ⍝ 'a3'∆PADD'FP'(4.28 30)
+     ⍝ 'a3'∆QP x y
+     ⍝ 'a3'∆QP x nsf.Yhat
+     ⍝ 'a3'∆QP cxo cyhat
+     ⍝ 'a3'∆QT'X' 'y Yhat cyhat' 'Check on Forsythe and Cehbychev Regressions'
+
+ ns.C_Yhat←cyhat
+ ns.F_Yhat←nsf.Yhat
+ ns.C_Coefficients←chc
+ ns.ChebyshevPolyNomials←chp
+ ns.Y←y
+ ns.X←x
+ ns.C_X←cxo
+ ns.C_Y←cy
+ cr←cy-cyhat
+ ns.C_Residuals←cr
+ ns.F_Residuals←nsf.Residuals
+ ns.F_DigitsLost←nsf.DL
+ ns.C_DigitsLost←0
+
+     ⍝  Statistics need to come from the Forsythe regression.
+     ⍝  The Chebylchev regression just copies the Forsythe.
+
+ ns.(F_AnovaTable F_Results F_ResidualsTable F_Statistics F_Yhat F_Residuals)←nsf.(AnovaTable Results ResidualsTable Statistics Yhat Residuals)

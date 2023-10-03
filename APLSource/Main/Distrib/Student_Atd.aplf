@@ -1,0 +1,4 @@
+ a←Student_Atd(t dof);mult;ker;int;a;b;⎕ML;⎕IO
+ ⎕ML←⎕IO←1
+ a←1-Student_P(t dof)
+ :Return

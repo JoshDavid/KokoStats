@@ -1,0 +1,23 @@
+ fbc←ForsythePolynomialCoeficients nsf;fp;fx;orderp;X;Y;XTX;XTY;res;digl;⎕ML;⎕IO
+
+     ⍝∇ Extract the current polyunomials and regress each of them.
+
+ ⎕ML←⎕IO←1
+
+ fp←nsf.ForsythePolynomialsOnX
+ orderp←2⊃⍴fp
+ fx←fp[;2]
+ fbc←,⊂(0 1)             ⍝  "x" is centered.
+      ⍝  get regressions for fp[;i]
+ :For i :In 3 To orderp
+     :Trap 0
+         fbc,←⊂fp[;i]⌹fx∘.*¯1+⍳i
+     :Else
+         X←fx∘.*¯1+⍳i ⋄ Y←fp[;i]
+         XTX←(⍉X)+.×X ⋄ XTY←Y+.×X
+         res digl←2↑XTY SolveSLAE XTX
+         fbc,←⊂res
+     :EndTrap
+ :EndFor
+
+ :Return

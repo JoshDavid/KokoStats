@@ -1,0 +1,29 @@
+ p←yor ParrCorr xio;xi;xo;yo;yr;nx;pr;fe;m;i;res;ans;b;f;f_r;uv;br;dw;dl;⎕ML;⎕IO
+
+     ⍝∇  something
+
+ ⎕ML←⎕IO←1
+ xi xo←xio
+ yo yr←yor
+
+ nx←⊃⌽⍴xo
+ :If nx=0 ⋄ p←⍬ ⋄ :Return ⋄ :EndIf
+ pr←nx⍴0
+ fe←nx⍴0
+ m←×/⍴xi
+
+ :For i :In ⍳nx
+     res←xo[;i]
+     :If m≠0
+         ans←xo[;i]StepRegressionSAE xi
+         b f f_r uv br dw dl res←ans
+     :EndIf
+
+     pr[i]←yr Corr MOST∆M∆CORR res
+
+     ans←yo StepRegressionSAE xi,xo[;,i]MOST∆M∆STEPD_REG(XI),XO[;,I]
+     b f f_r uv br dw dl res←ans
+     fe[i]←¯1↑f_r
+ :EndFor
+
+ p←pr fe

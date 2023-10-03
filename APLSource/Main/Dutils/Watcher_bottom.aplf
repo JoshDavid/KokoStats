@@ -1,0 +1,9 @@
+ Watcher_bottom;w;⎕ML;⎕IO
+ ⎕ML←⎕IO←1
+
+ w←⎕VR'Watcher_base'
+ w←'down over' '94 ¯5'∆REPLACE_STRING w
+ w←'5.8 0' '0 17'∆REPLACE_STRING w
+ w←'28.75' '16'∆REPLACE_STRING w
+ w←'Watcher_base' 'Watcher '∆REPLACE_STRING w
+ ⎕FX w

@@ -1,0 +1,11 @@
+ N←ChiSq_Dcp(ChiSq cumdf);Fun;⎕ML;⎕IO
+
+     ⍝∇  s ← ChiSq_Da ChiSq p -- Critical degrees-of-freedom for ChiSquare
+     ⍝∇                      cumdf ≡ p = 1-alpha
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ Fun←{cumdf-ChiSq_P ChiSq ⍵}
+ N←⌈Fun ##.Dutils.HalfStepI 1 170 24
+ N←N⌊1000000
+
+ :Return

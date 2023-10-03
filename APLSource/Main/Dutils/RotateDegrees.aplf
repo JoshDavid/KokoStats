@@ -1,0 +1,10 @@
+ r←deg RotateDegrees pointmat;rmat;rad;⎕ML;⎕IO
+
+     ⍝∇   Rotate either a vetor or a 2 column matrix of points an angle in deg(rees)
+     ⍝∇     If deg is positive the rotation is clockwise
+ ⎕ML←⎕IO←1
+ rad←360÷⍨deg×○2
+ rmat←2 2⍴1 ¯1 1 1×2 1 1 2○rad
+ r←pointmat+.×rmat
+
+ :Return

@@ -1,0 +1,21 @@
+ Q←ChiSq_Acd(Xs dof);ker;hd;mult;int;To;⎕ML;⎕IO
+
+     ⍝∇  the right tail area for a critical ChiSq and dof
+
+ ⎕ML←⎕IO←1
+
+ :If Xs<0.01
+     Q←1-ChiSq_P Xs dof
+     :Return
+ :EndIf
+
+     ⍝∇ 26.4.2
+ To←{(×⍺-⍵)×⍺+(×⍵-⍺)×⍳1+|⍵-⍺}
+ ker←{(⍵*hd-1)×*-⍵÷2}
+ hd←dof÷2
+ mult←÷(2*hd)×!hd-1
+
+ int←(ker ##.Dutils.∆GQ)##.Dutils.∆QUAD Xs 1000 50
+ Q←mult×int
+
+ :Return

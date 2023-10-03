@@ -1,0 +1,24 @@
+ ys←SampleOrthoRegressedData(y x xs order);nsf;fbc;fp;fx;xM;xm;xhw;xc;yhat;⎕ML;⎕IO
+
+     ⍝∇   Given:    x y data pairs and an x-vector where you would like to get
+     ⍝∇             values from the fitted xy curve  and an order to do the
+     ⍝∇             xy Forsythe regression.
+     ⍝∇   Deliver:  y values at xs
+
+     ⍝ fit the data
+ ⎕ML←⎕IO←1
+
+ nsf←RegressForsythe(y x order)
+ fbc←ForsythePolynomialCoeficients nsf
+
+     ⍝  Put xs on the same range basis as the x vector
+ fp←nsf.ForsythePolynomialsOnX
+ fx←fp[;2]
+ xM←⌈/fx ⋄ xm←⌊/fx
+ xhw←0.5×xM-xm     ⍝ range
+ xc←0.5×xM+xm     ⍝ center
+ yhat←nsf.Yhat
+      ⍝  Interpolate xs into x,[1.5]yhat
+ ys←LagrangeInterpolation x yhat xs 6
+
+ :Return

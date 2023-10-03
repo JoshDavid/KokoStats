@@ -1,0 +1,21 @@
+ {cm}←{names}CorrelMatrix x;avex;delt;sosq;srsos;sxy;cros;names;mdelt;⎕ML;⎕IO
+
+     ⍝∇ the correlation matrix between the input vector of vectors
+
+ ⎕ML←⎕IO←1
+ :If 1=≡x ⋄ x←↓[1]x ⋄ :EndIf
+ avex←Dutils.Average¨x
+ delt←x-avex
+ sosq←Dutils.SumByTwos¨delt×delt
+ srsos←sosq*0.5
+ mdelt←↓↑delt
+ sxy←Dutils.SumByTwos¨mdelt∘.×mdelt
+ cros←srsos∘.×srsos
+
+ cm←3 Dutils.RndDP¨sxy÷cros
+ :If 0=⎕NC'names'
+     names←'X',¨⍳≢cm
+ :EndIf
+ cm←(' ',names),names⍪cm
+
+ :Return

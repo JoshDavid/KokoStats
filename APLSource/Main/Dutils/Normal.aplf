@@ -1,0 +1,8 @@
+ z←Normal x;⎕ML;⎕IO
+
+     ⍝∇  z ← Normal x --  ordinate of the normal distribution
+
+ ⎕ML←⎕IO←1
+ z←(*-0.5×x*2)÷(○2)*0.5
+
+ :Return

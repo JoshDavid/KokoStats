@@ -1,0 +1,4 @@
+ a←Average v
+
+ a←(SumByTwos v)÷≢v
+ :Return

@@ -1,0 +1,6 @@
+ UnWatcher
+
+     ⍝∇  ∆UNWATCHER -- remove all trace objects made by ∆WATCHER
+     ⍝∇  ──────────
+
+ ⎕EX'X∆WATCHER'

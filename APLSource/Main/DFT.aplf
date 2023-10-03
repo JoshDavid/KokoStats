@@ -1,0 +1,28 @@
+ (vec ns)←DFT x;N;n;I;k;dft;mat;mzero;vec;⎕ML;⎕IO
+     ⍝∇  discrete fourier transform by its definiton:  slow for big vectors: >10000
+     ⍝∇  x can be of any length; not necessarily 2*n
+     ⍝∇
+     ⍝∇  Input:    a vector (usually a time series)
+     ⍝∇  Output:   dft: the transform as a complex vector
+     ⍝∇            ns:  a namespace with:  dft_as_matrix, real, imaginary, complex_vector, power and phase
+
+ ⎕ML←⎕IO←1
+ N←≢x ⋄ I←0J1
+ dft←⍬
+
+ :For k :In ¯1+⍳N
+     dft,←+/(x)×*-(○2)×I×k×(¯1+⍳N)÷N
+ :EndFor
+
+ mat←(9○dft),[1.5](11○dft)
+ ⍝  get rid of near zeros  1E-9
+ mzero←1E¯9>|,mat
+ (mzero/,mat)←0
+
+ ns←⎕NS''
+ ns.R_I_Matrix←mat
+ ns.Real←mat[;1]
+ ns.Imag←mat[;2]
+ ns.ComplexVector←vec←{⍎(⍕⊃⍵),'j',(⍕2⊃⍵)}¨↓mat
+ ns.Power←10○vec
+ ns.Phase←12○vec

@@ -1,0 +1,151 @@
+ {NS}←{FactorNames}Anova args;Trim;nfact;nrep;levels;comb;ncells;ndata;average;delta;ave;sostotal;doftotal;array;cells;cell_ave;deltas;sos_err;ms_err;i_effects;c_effects;n_effects;inl;ca;sos;dof;ms;frat;hi;df;i;outs;ins;nave;mult;crot;crave;corr;wcorr;mserrd;alfa;dof_err;got;tit;equ;ans;doferrd;err;tot;min;eql;data;n_levels;norm;nrows;rave;⎕ML;⎕IO;tns;residuals;aves;nl;tags
+
+     ⍝∇  Create and ANalysis Of VAriance table given:
+     ⍝∇     data: a vector of the data with replicates going the fastest
+     ⍝∇           (last logical subscript), and the first factor (A)
+     ⍝∇           going the slowest (first logical subscript).
+     ⍝∇           If the data is a logical multimentional array:
+     ⍝∇                data ← ,ARRAY[A;B;C;......;Reps]
+     ⍝∇     n_levels:  number of levels of each factor
+     ⍝∇              e.g.: for  ARRAY←3 5 4 7 2 ⍴ data
+     ⍝∇                      n_levels←3 5 4 7 2
+     ⍝∇                      factors←4 :: factor levels = 3 5 4 7
+     ⍝∇                      number of replicates = 2
+     ⍝∇                      factor D has 7 levels
+     ⍝∇              no factor should have just 0 or 1 level; but there
+     ⍝∇              can be just 1 replicate
+     ⍝∇     norm:  if =1 the table will be put in "normal" order: A  B AB  C AC BC ABC   D AD .....
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ Trim←{{⍎(25 10⍕⍵)~'_'}¨⍵}
+ NS←⎕NS''
+
+ data n_levels norm←3↑args,0
+ NS.ANOVA_Data←data
+ nl←¯1+≢n_levels
+ :If 0=⎕NC'FactorNames'
+     tags←FactorNames←(nl↑⎕A),⊂'Rep'
+ :Else
+     tags←FactorNames
+ :EndIf
+
+ nfact←¯1+≢n_levels
+ nrep←⊃⌽n_levels
+ levels←¯1↓n_levels
+ :If ∨/levels<2 ⋄ 'Can not have 0 or 1 as a number of items in a factor.' ⋄ :Return ⋄ :EndIf
+
+ comb←Dutils.CompleteComb nfact             ⍝  let the term effect refer to: main effects (A, B, ..) and the interactions (AB, ... ACD, ...)
+ ncells←×/levels
+
+ ndata←×/n_levels
+ :If ndata≢≢data ⋄ 'data length '(≢data)' does not match levels '(ndata) ⋄ :Return ⋄ :EndIf
+
+ ave←(Dutils.SumByTwos data[ndata?ndata])÷ndata            ⍝  add up the data in random order as carefully as possible
+ average←ave+ndata÷⍨Dutils.SumByTwos data-ave              ⍝  refine the average as the average + the average of the residuals (which should be close to zero)
+ deltas←data-average
+
+     ⍝   start collecting info
+ sostotal←+/deltas*2
+ doftotal←ndata-1
+     ⍝   make an array
+ cells←n_levels⍴deltas
+ cell_ave←(+/cells)÷nrep             ⍝ average across the replicates foe each cell
+ residuals←deltas-,cell_ave∘.×nrep⍴1
+ sos_err←+/residuals*2               ⍝ this should be zero if there are just 1 replicates
+ dof_err←ncells×nrep-1
+ ms_err←sos_err÷{⍵+⍵=0}dof_err       ⍝ is this 0 if there is but 1 replicate
+
+     ⍝ generate the anova items (single effects, plus interactions
+ i_effects←,[1.5]Dutils.CompleteComb nfact   ⍝  column matrix of factor indexes
+ c_effects←tags∘{⍺[⍵]}¨i_effects        ⍝  character representation of the effects;  A B ... ABD ...
+ n_effects←≢i_effects                 ⍝  how many rows in the anova table
+ inl←⍳nfact                           ⍝  1 2 ... no-of-factors
+
+ ca←(⍴i_effects)⍴0                    ⍝  m 2  matrix
+ sos←dof←ms←frat←n_effects⍴0          ⍝  start them out as zeros
+
+ hi←n_effects                         ⍝ table row-index of the highest interaction
+ ca[hi;1]←⊂cell_ave+average
+ sos[hi]←+/,cell_ave*2
+ dof[hi]←×/levels-1
+ ms[hi]←sos[hi]÷dof[hi]
+
+     ⍝  process all of the effects
+ :For i :In ¯1↓⍳n_effects             ⍝  highest interaction has no insis a special case
+     outs←i⊃i_effects[;1]            ⍝  axes that will have their sums calculated
+     ins←inl~outs                    ⍝  sum over all of these axes
+     dof[i]←df←×/n_levels[outs]-1
+     nave←×/n_levels[ins]
+     mult←nrep××/n_levels[ins]
+
+     crot←Trim(⊃,/n_levels[outs],nave)⍴(⍋,⊃,/(outs,ins))⍉cell_ave  ⍝
+     crave←Trim(+/crot)÷nave
+     ca[i;1]←⊂crave+average
+     corr←wcorr←0
+
+     :If i>1
+         wcorr←~∨⌿ins∘.∊(i-1)↑,i_effects        ⍝  which previous effects contain a current "in"
+         corr←Trim+/wcorr/sos[⍳i-1]
+     :EndIf
+     sos[i]←Trim(mult×+/,(crave)*2)-corr
+     ms[i]←Trim sos[i]÷df
+     :If i>nfact
+
+     :EndIf
+ :EndFor
+
+ i←n_effects
+ ca[i;1]←⊂cell_ave+average
+ sos[i]←Trim 0⌈(nrep×+/,cell_ave*2)-+/sos[⍳i-1]
+ ms[i]←Trim 0⌈sos[i]÷dof[i]
+
+ mserrd←ms_err
+ doferrd←dof_err
+ :If dof_err=0
+     mserrd←0⌈ms[n_effects]
+     doferrd←dof[n_effects]
+     ms_err←0
+ :EndIf
+ mserrd←Trim mserrd
+ doferrd←{⍵+⍵=0}doferrd
+ frat←ms÷{⍵+⍵=0}mserrd
+ alfa←{{⍎15 3⍕⍵}¨⍵}Distrib.Fratio_A¨frat,¨dof,¨doferrd
+
+ frat←{{⍎25 3⍕⍵}¨⍵}frat
+ got←8 Dutils.RndF sos,sos_err,sostotal
+ sos←n_effects↑got
+ sos_err sostotal←¯2↑got
+
+ got←8 Dutils.RndF ms,ms_err
+ ms←n_effects↑got
+ ms_err←¯1↑got
+
+ tit←(⊂'  Factor  '),(⊂'  Sum Sq. '),(⊂'     DOF  '),(⊂'  Mean Sq.'),(⊂'   F-ratio'),(⊂'  ⍺ signif.')
+ equ←(⊂'========  '),5⍴⊂'  ========='
+ ans←c_effects,sos,dof,ms,frat,[1.5]alfa
+
+     ⍝ some like the table in a different order:  A B AB C AC BC ABC D AD ...
+ :If norm ⋄ ans←Dutils.NormalTableOrder ans ⋄ :EndIf
+
+
+ err←(⊂10↑'error'),sos_err,dof_err,ms_err,(⊂'  '),(⊂'  ')
+ tot←(⊂10↑'total'),sostotal,doftotal,(⊂'  '),(⊂'  '),(⊂'  ')
+ min←(⊂'--------  '),5⍴⊂'  --------'
+ eql←(⊂'========  '),(3⍴⊂'  ========'),(⊂'  '),(⊂'  ')
+
+
+ tns←tit,[1]equ,[1]ans,[1]min,[1]err,[1]eql,[0.5]tot
+
+ NS.ANOVA_Table←tns
+
+     ⍝ some like the table in a different order:  A B AB C AC BC ABC D AD ...
+ :If norm ⋄ ca←Dutils.NormalTableOrder ca ⋄ :EndIf
+
+ nrows←(≢residuals)÷nrep
+ rave←4 Dutils.RndS¨(Dutils.SumByTwos¨↓[1]nrows nrep⍴residuals)÷nrows
+
+
+ aves←(ans[;1],ca)⍪'reps'rave
+ NS.ANOVA_Averages←↑↑((⊂¨↓aves),¨⊂,' '),¨⊂,' '
+
+ NS.ANOVA_Residuals←residuals

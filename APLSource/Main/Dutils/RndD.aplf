@@ -1,0 +1,12 @@
+ z←d RndD v;⎕IO;f;⎕ML
+
+     ⍝∇ round to a number of decimal places:  12.235  ←  3 RndD 12.2345678
+
+ ⎕ML←⎕IO←1
+ :If (v≡⍬) ⋄ z←v ⋄ :Return ⋄ :EndIf
+ :If 2≤⍴⍴v ⋄ z←(⍴v)⍴d RndD,v ⋄ :Return ⋄ :EndIf
+
+ f←10*d
+ z←(⌊0.5+f×v)÷f
+
+ :Return

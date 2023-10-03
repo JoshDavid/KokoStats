@@ -1,0 +1,24 @@
+ {ys}←LagrangeInterpolation(x y xs np);Select;io;n;i;iu;xu;yu;num;den;⎕ML;⎕IO
+
+     ⍝∇ Given:   xy data and a number of points (np):  This assumes a monotonic x
+     ⍝∇ Return:  interpolated ys values at xs using n datapoints  from xy
+
+ ⎕ML←⎕IO←1
+
+ Select←{(¯1+((≢x)-⍺-1)⌊1⌈(+/⍵≥x)+1-⍺÷2)+⍳⍺}
+ np←2×⌈np÷2
+ xs←,xs
+
+     ⍝  make sure x is monotonic:   just in case
+ io←⍋x ⋄ x←x[io] ⋄ y←y[io]
+ n←≢x
+ ys←⍬
+ :For i :In ⍳≢xs
+     iu←np Select i⊃xs
+     xu←x[iu] ⋄ yu←y[iu]
+     num←(np⍴i⊃xs)∘.-xu
+     (1 1⍉num)←1
+     den←xu∘.-xu
+     (1 1⍉den)←1
+     ys,←+/yu××/num÷den
+ :EndFor

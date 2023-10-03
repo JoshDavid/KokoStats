@@ -1,0 +1,8 @@
+ b←{nop}Beta(a b);ker;⎕ML;⎕IO
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ :If 0=⎕NC'nop' ⋄ nop←200 ⋄ :EndIf
+ :If 980<a+b ⋄ b←0 ⋄ :EndIf
+ ker←{((1○⍵)*¯1+2×a)×((2○⍵)*¯1+2×b)}
+ b←2×ker ∆GQ ∆QUAD 0(○0.5)200
+ :Return

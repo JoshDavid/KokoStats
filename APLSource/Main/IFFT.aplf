@@ -1,0 +1,37 @@
+ (vec ns)←IFFT X;N;R;M;L;P;Q;S;T;Z;mzero;vec;⎕ML;⎕IO
+
+     ⍝∇ Inverse Fast Fourier Transform
+     ⍝∇ Input:    the result of an FFT
+     ⍝∇ Output:   (the real part of the IFFT: the input to the FFT)
+     ⍝∇            a namespace with: ifft as matrix, real, imaginary, complex, power and phase
+
+ ⎕ML←⎕IO←1
+
+ :If 1=⍴⍴X
+     ⍝  turn it into a matrix
+     X←(9○X),[1.5](11○X)
+ :EndIf
+
+ X←(2,R←(M←⌊2⍟N←1↑⍴X)⍴2)⍴X
+ Z←R⍴⍉2 1∘.○○(-⎕IO-⍳P)÷P←N÷2
+ Q←⍳P←M-1+L←0
+ T←M-~⎕IO
+
+ :For L :In ⍳M-1
+     X←(+⌿X),[⎕IO+¯0.5+S←M-L](-/Z×-⌿X),[⎕IO+P-0.5]+/Z×⌽-⌿X
+     Z←(((-L)⌽Q),T)⍉R⍴((1+P↑(S-1)⍴1),2)↑Z
+ :EndFor
+
+ Z←((N,2)⍴(+⌿X),[⎕IO-0.5]-⌿X)÷N
+
+ ⍝  get rid of near zeros  1E-9
+ mzero←1E¯9>|,Z
+ (mzero/,Z)←0
+
+ ns←⎕NS''
+ ns.R_I_Matrix←Z
+ ns.Real←Z[;1]
+ ns.Imaj←Z[;2]
+ ns.ComplexVector←vec←{⍎(⍕⊃⍵),'j',(⍕2⊃⍵)}¨↓Z
+ ns.Power←10○vec
+ ns.Phase←12○vec

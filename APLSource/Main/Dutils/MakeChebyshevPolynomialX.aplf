@@ -1,0 +1,9 @@
+ cp←MakeChebyshevPolynomialX(order nd);⎕ML;⎕IO
+
+     ⍝∇ Create a chebyshev polynomial "x" vector
+     ⍝∇ order defaults to nd if order=0
+
+ ⎕ML←⎕IO←1
+
+ order←(|order×order≠0)+(nd×order=0)
+ cp←nd⍴⌽2○((○1)×¯1+2×⍳order)÷order×2

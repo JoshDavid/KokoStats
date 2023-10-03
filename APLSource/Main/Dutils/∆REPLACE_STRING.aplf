@@ -1,0 +1,14 @@
+ fixed←old_new ∆REPLACE_STRING string;old;new;j;⎕ML;⎕IO
+
+     ⍝∇ fixed←'old' 'new' ∆REPLACE_STRING cvec -- replace occurances of 'old' in cvec
+     ⍝∇                   ───────────────         with new
+     ⍝∇
+     ⍝∇    cvec must be a character vector
+     ⍝∇    old and new must be scalars or vectors of characters
+
+ ⎕ML←⎕IO←1
+
+ old new←,¨2↑old_new
+
+ j←old⍷string
+ fixed←(⍴new)↓⊃,/((⍴string)⍴⊂new),¨(⍴old)↓¨string←(((⍴old)↑1),j)⊂old,string

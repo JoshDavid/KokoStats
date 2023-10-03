@@ -1,0 +1,7 @@
+ cc←CompleteComb n;l;⎕ML;⎕IO
+
+     ⍝∇   this produces all combinations if all lengths out of ⍳n
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ cc←⊃,/↓¨(⍳n)Comb¨n
+ :Return

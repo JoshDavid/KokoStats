@@ -1,0 +1,6 @@
+ z←p RndP v;⎕ML;⎕IO
+
+     ⍝∇  round to a given decimal places pattern:   23.35  ←  .01 RndP  23.34567
+
+ ⎕ML←⎕IO←1
+ z←(×v)×p×⌊0.5+|v÷p

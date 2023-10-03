@@ -1,0 +1,40 @@
+ (vector ns)←FFT X;x;d;n;m;r;p;z;k;q;t;s;fft;vector;matrix;mzero;⎕ML;⎕IO
+
+     ⍝∇  Calculate the fast fourier transform of x
+     ⍝∇
+     ⍝∇  Fast Fourier Transform
+     ⍝∇  x should best be of lenght 2*n; it not it is padded to the next higher power of 2 with zeros
+     ⍝∇
+     ⍝∇  Input:    a vector (usually a time series)
+     ⍝∇  Output:   dft: the transform as a complex vector
+     ⍝∇            ns:  a namespace with:  fft_as_matrix, real, imaginary, complex_vector, power and phase
+
+ ⎕ML←⎕IO←1
+ p←⌈2⍟≢X
+ n←2*p
+ x←n↑X
+ x←(2,r←(m←⌊2⍟n←≢x)⍴2)⍴x←(1,d[2]↑1)/((d←2↑(⍴x),1)⍴x),0
+ z←r⍴⍉2 1∘.○○(1-⍳p)÷p←n÷2
+ q←⍳p←m-1
+ t←m
+
+ :For k :In ⍳m-1
+     x←(+⌿x),[1+¯0.5+s←m-k](-/z×-⌿x),[1+p-0.5]+/z×⌽-⌿x
+     z←(((-k)⌽q),t)⍉r⍴((1+p↑(s-1)⍴1),2)↑z
+ :EndFor
+
+ fft←(n,2)⍴((+⌿x),[0.5]-⌿x)
+
+     ⍝  get rid of near zeros  1E-9
+ mzero←1E¯9>|,fft
+ (mzero/,fft)←0
+
+ vector←{⍎(⍕⊃⍵),'j',(⍕2⊃⍵)}¨↓fft
+
+ ns←⎕NS''
+ ns.ComplexVector←vector
+ ns.R_I_Matrix←fft
+ ns.Real←fft[;1]
+ ns.Imag←fft[;2]
+ ns.Power←10○vector
+ ns.Phase←12○vector

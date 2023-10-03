@@ -1,0 +1,18 @@
+ res←Fratio_FPND fand;k;F;cumdf;dofn;dofd;⎕ML;⎕IO
+
+      ⍝∇ return the missing element given the other 3 out of: F  cumdf  dofn  dofd
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ k←⍸fand≡¨⊂⍬
+ F cumdf dofn dofd←fand
+
+ :Select k
+ :Case 1                               ⍝  get F
+     res←Fratio_Fp cumdf dofn dofd
+ :Case 2                                ⍝  get alpha
+     res←Fratio_P F dofn dofd
+ :Case 3                                ⍝  get numerator-degrees-of-freedom
+     res←Fratio_Np F cumdf dofd
+ :Case 4                                ⍝  get denominator-degrees-of-freedom
+     res←Fratio_Dp F cumdf dofn
+ :EndSelect

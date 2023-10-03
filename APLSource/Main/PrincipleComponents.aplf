@@ -1,0 +1,54 @@
+ {NS}←PrincipleComponents odata;corm;eigen;ans;data;a;d;e;z;zr;ea;tv;cv;v;n;row;b;co;r;Vup;bl;ul;nplaces;indexed_factors;ortho_factors;sorted_ortho_factors;ofactors;sofactors;tofactors;tsofactors;⎕ML;⎕IO;cumpct;pct;tab;factors;sfactors;fcm;mfcm
+
+     ⍝∇  Preform principal-component analysis on a vector of vectors.
+     ⍝∇    If data ia a matrix, it must have variables as columns.
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ NS←⎕NS''
+
+ nplaces←3
+ data←Dutils.Standardize odata
+ :If 2=≡data ⋄ data←↑[0.5]data ⋄ :EndIf      ⍝  make a vov into a matrix
+
+ corm←(⍉data)+.×data   ⍝  the correlation matrix
+ NS.PCOMP_DataCorrelationMatrix←corm÷⊃corm
+
+ a d e z←1 Dutils.SymetricEigen corm
+ NS.PCOMP_Components←1↓z
+ NS.PCOMP_EigenValues←eigen←z[1;]
+ zr←nplaces Dutils.RndDP¨z
+ ea←nplaces Dutils.RndDP¨z[1;]
+ tv←nplaces Dutils.RndDP+/z[1;]
+ cumpct←cv←nplaces Dutils.RndDP¨(100×+\ea)÷tv
+ pct←v←nplaces Dutils.RndDP¨100×z[1;]÷+/z[1;]
+ n←2⊃⍴data
+ bl←n⍴⊂' '
+ ul←n⍴⊂' ====='
+ NS.PCOMP_Percent←v
+ NS.PCOMP_CumulativePercent←cv
+
+ tab←⍉(⍳n),ul,ea,bl,v,cv,bl,(⍉1↓zr)
+ row←↑20↑¨(⊂'  Factor no.       >'),(⊂21⍴'='),(⊂'  Eigen Values'),(⊂' '),(⊂'   % Variance'),(⊂'Cum. % Variance'),(⊂' '),(⊂'weight on var: V',⍕1),((⊂((15⍴' '),'V')),¨⍕¨1↓⍳n)
+ tab←↑('¯'⎕R'-')¨↓⍕row,tab
+ NS.PCOMP_Table←tab
+
+ b←1↓z
+ NS.PCOMP_Factors←co←data+.×b              ⍝ ↑('¯'⎕R'-')¨↓⍕
+ fcm←(⍉co)+.×co
+ mfcm←(|,fcm)<1E¯12
+ (mfcm/,fcm)←0
+ NS.PCOMP_FactorCovarianceMatrix←fcm
+ r←≢data
+ factors←co
+ Vup←{i←⍒⍵ ⋄ ⍵[i],[1.5]i}
+     ⍝ ortho_factors←4 Dutils.RndDP¨((r-1)*0.5)×co
+ sfactors←Vup¨↓[1]factors                 ⍝  ortho_
+
+     ⍝ NS.PCOMP_OrthogonalFactors←tofactors←ortho_factors     ⍝  ('¯'⎕R'-')¨⍕¨
+ NS.PCOMP_FactorsSorted←tsofactors←nplaces Dutils.RndDP¨↑⊃,/sfactors     ⍝  ('¯'⎕R'-')¨↓(⍕((r,1)⍴⍳r),       )
+
+     ⍝ NS.PCOMP_Diagonal←d
+     ⍝ NS.PCOMP_Evector←e
+     ⍝ NS.PCOMP_Amatrix←a
+
+ :Return

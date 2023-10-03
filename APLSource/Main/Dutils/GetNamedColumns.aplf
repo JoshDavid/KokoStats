@@ -1,0 +1,15 @@
+ cols←matrix GetNamedColumns names;head;k;⎕ML;⎕IO
+
+     ⍝∇  As a documentation help:  get column information from a matrix
+     ⍝∇    by using names in the header (top row) of the matrix
+     ⍝∇    names that don't exist will simply be loaded a ⍬
+ ⎕ML←⎕IO←1
+
+ head←RemoveExcessBlanks¨matrix[1;]
+ :If 1=≡names ⋄ names←,⊂names ⋄ :EndIf
+ k←head⍳names
+
+ cols←(matrix,⊂⍬)[;k]
+ cols[1;]←names
+
+ :Return

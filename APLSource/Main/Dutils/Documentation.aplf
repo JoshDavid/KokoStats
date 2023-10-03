@@ -1,0 +1,698 @@
+ Documentation
+     ⍝===============================================================================
+     ⍝
+     ⍝           Quickie Stats Summary
+     ⍝
+     ⍝          {ns} ← Anova          v  levels  norm
+     ⍝          {ns} ← AnovaPool      abt_mms_fr_il_al_si  (6 ⍬s with 1 substitution)
+     ⍝
+     ⍝          {ns} ← {vnames} RegressMultipleLinear  yv  xvov
+     ⍝          {ns} ← {vnames} StepWiseAll            yv  xvov  Fr  Fa  (istart)
+     ⍝          {ns} ← {vnames} StepWiseOne            yv  xvov  Fr  Fa  (istart)
+     ⍝          {ns} ← {vnames} RegressPolynmomial     yv  xv    order
+     ⍝          {ns} ← {vnames} RegressFosythe         yv  xv    order
+     ⍝          {ns} ← {vnames} RegressChebyshev       yv  xv    order
+     ⍝          {ns} ← {vnames} RegressFourier         yv  xv    order
+     ⍝  {qvov names} ← ModelQuadratic                  vov
+     ⍝         {vov} ← ModelChebyshev                  ndata order
+     ⍝
+     ⍝          {ns} ← PrincipleComponents    vov
+     ⍝
+     ⍝          {ns} ← {vnames} Statistics    vov
+     ⍝          {cm} ← {vnames} CorrelMatrix  vov
+     ⍝          {ac} ← AutoCorr               v
+     ⍝          {cc} ← CrossCorr              v_stationary   v_losing_front
+     ⍝          {ns) ← CrossTabs              v1  v2
+     ⍝
+     ⍝     {Xans DL} ← SimutaneousEquations   Amat RHSvector
+     ⍝
+     ⍝          {ft} ← DFT                    v
+     ⍝          {ft} ← FFT                    v
+     ⍝          {ns} ← IDFT                  fft
+     ⍝          {ns} ← IFFT                  fft
+     ⍝          {wv} ← {ww} TukeyWindow       v
+     ⍝
+     ⍝         {vov} ← LeadLag                vov vup¯dn vfill cut_bot cut_top
+     ⍝
+     ⍝
+     ⍝-------------------------------------------------------------------------------
+     ⍝                       in    Stats.Distrib.
+     ⍝             x ← Normal_Xa    ⍺      returns the x for that distributio tail
+     ⍝             ⍺ ← Normal_Ax    x      returns the ⍺ for that x (distance from 0)
+     ⍝             t ← Student_Tad  ⍺ dof  return critical student_t value
+     ⍝             ⍺ ← Student_Atd  t dof  return ⍺
+     ⍝             c ← ChiSq_Cad    ⍺ dof  return critical ChiSquare
+     ⍝             a ← ChiSq_Acd    c dof  return alpha; given a ChiSquare and DOF
+     ⍝             f ← Fratio_Fand  ⍺ n d  return critical Fratio;  alpha dof_N dof_D
+     ⍝             ⍺ ← Fratio_Afnd  F n d  return ⍺
+     ⍝             d ← Fratio_Dfan  F ⍺ n  return denominator degrees of freedom
+     ⍝                    and all of the other logical possibilities
+     ⍝
+     ⍝===============================================================================
+     ⍝===============================================================================
+     ⍝===============================================================================
+     ⍝
+     ⍝ Anova:   n-way Analysis of Variance
+     ⍝              ns  ←  {FactorNames)  Anova  d  f  {p}
+     ⍝  Arguments:
+     ⍝    d:  vector of data: logically partitioned with the first factor (A) going
+     ⍝                        the slowest (all values of the first level of A, then
+     ⍝                        all values for the second levcl of A, etc.) and the
+     ⍝                        replicates for each cell bunched together:
+     ⍝       A1 .........................................................    A2 ....
+     ⍝       B1                             B2                  B3 ......    B1
+     ⍝       C1        C2        ......     C1         C2 ...   C1 C2 ...    C1  C2 .
+     ⍝       D   all levels of D for A1,B1,C1; then all levels of D for A1,B1,C2; ...
+     ⍝       R   (replicates of (A1,B1,C1,D1) R1 R2 ...) then
+     ⍝           (replicates of (A1,B1,C1,D2)) R1 R2 ) ... etc.
+     ⍝
+     ⍝    f: the list of factor levels:  If A has 3 levels, B has 4 levels, C has 2
+     ⍝                          levels, D has 7 levels, and there are 5 replicates
+     ⍝                          for each case:  f ≡  3 4 2 7 5
+     ⍝                          that means:  (≢d) ≡ 840
+     ⍝    p: optional:  default=0 ≡ present in the order:  A  B  C ... AB AC ...
+     ⍝                          1 ≡ present as:  A B AB C AC BC ABC D AD ....
+     ⍝
+     ⍝       There can be up to 15 factors with replicates.   The pattern must be
+     ⍝       complete: every level of A must have every level of each of the other
+     ⍝       factors, and every case must have the same number of replicates.
+     ⍝       The vector of numbers is logically the ravel of an n-dimensional matrix
+     ⍝       that is A by B by C by ... by R. (d ≡ ,f ⍴ d)
+     ⍝
+     ⍝  Resultant output:  ns: A (shy) namespace containing the variables:
+     ⍝              ANOVA_Table   ANOVA_Averages   ANOVA_Residluals  and  ANOVA_Data
+     ⍝
+     ⍝   Try:  ns ← Anova (⍳64) (2 2 2 2 4)    {You can add error to the data:
+     ⍝                          ((⍳64)+(64 random numbers))(2 2 2 2 4)
+     ⍝                          At least Factor A (level 1 values: 1-32)(level 2
+     ⍝                          values: 33-64) will turn out to be significant for
+     ⍝                          reasonable sized error.  E.g.:  ((⍳64)+ (.1×64?64)
+     ⍝
+     ⍝   If all experiments have replicate 1 first, then replicate 2, then 3, etc.
+     ⍝   i.e. replicate levelss are going the slowest not the fastest, they can be
+     ⍝   reordered using the transpose:     r_fast ← .... ⍉  r_slow
+     ⍝   If the ≢d ≡ 60 and there are 5 replicates of 12 exeriments where factor a
+     ⍝   has 3 levels; b has 4 levels -- the logical rho of d is 5 3 4.  It needs to
+     ⍝   be 3 4 5.  So:   d_good ← ,3 1 2 ⍉  5 3 4 ⍴ d_bad
+     ⍝
+     ⍝   My experience has shown that if there are missing data, just fill out the
+     ⍝   cell with the average (or expected average), and you will get the "big
+     ⍝   picture".  One way to test this is analyze some the replicates separately.
+     ⍝   The results should pretty much compare.  Truly significant factors should
+     ⍝   remain significant.
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ AnovaPool:   it sometimes helps to bunch some of the factors or interactions
+     ⍝              that have small F-ratios (large ⍺) into the error pool.
+     ⍝                  pns ← ns   AnovaPool   number_or_letters
+     ⍝
+     ⍝   Arguments:
+     ⍝ R      a vector of 6 nulls with one of the nulls replaced (trailing nulls can
+     ⍝        be ignored).
+     ⍝ L      the namespace from the full Anova.
+     ⍝
+     ⍝   Result is a namespace with the variable:    Pooled_Anova_TAble
+     ⍝
+     ⍝   Right argument meanings:
+     ⍝        pns ← ns AnovaPool ABB {⍬ ⍬ ⍬ ⍬ ⍬}    ⍝ pool All But the "n" Biggest
+     ⍝                                                     mean squares
+     ⍝        pns ← ns AnovaPool ⍬ MMS {⍬ ⍬ ⍬ ⍬}    ⍝ pool factors/interactions with
+     ⍝                                                     a mean square < Minimum
+     ⍝                                                     Mean Square
+     ⍝        pns ← ns AnovaPool ⍬ ⍬ FR {⍬ ⍬ ⍬}     ⍝ pool F_ratios smaller than FR
+     ⍝        pns ← ns AnovaPool ⍬ ⍬ ⍬ IL {⍬ ⍬}     ⍝ pool Interaction Levels IL and
+     ⍝                                                     higher.  ABD ≡ 3rd level
+     ⍝                                                     interaction.
+     ⍝        pns ← ns AnovaPool ⍬ ⍬ ⍬ ⍬ AL {⍬}     ⍝ pool factors with an alpha ≥ AL
+     ⍝        pns ← ns AnovaPool ⍬ ⍬ ⍬ ⍬ ⍬ SI       ⍝ pool factors that include these
+     ⍝                                                     letters.  if SI ≡ BD then
+     ⍝
+     ⍝   for example:  pns ← ns AnovaPool 6             would pool all but the 6
+     ⍝                                                  biggest mean squares.
+     ⍝                 pns ← ns AnovaPool ⍬ ⍬ 2.3       would pool all F-ratios less
+     ⍝                                                  than 2.3
+     ⍝                 pns ← ns AnovaPool ⍬ ⍬ ⍬ 4       would pool all 4, 5, 6...-way
+     ⍝                                                  interactions
+     ⍝                 pns ← ns AnovaPool ⍬ ⍬ ⍬ ⍬ ⍬ BD  5 way Anova:  BD would pool
+     ⍝                                                  B D
+     ⍝                                                  AB AD BC BD BE CD DE ABC ABD
+     ⍝                                                  ABE ACD ADE BCD BCE BDE CDE
+     ⍝                                                  ABCD ABCE ABDE ACDE BCDE
+     ⍝                                                  ABCDE
+     ⍝                                                  In a 5-way Anova (with
+     ⍝                                                  replicates) there are 31
+     ⍝                                                  interactions: +/5 10 10 5 1
+     ⍝
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ AutoCorr       find cyclical behavior
+     ⍝                   ac ← AutoCorr x
+     ⍝
+     ⍝   Argument:     x:      a vector of numbers.
+     ⍝   Result:      ac:      a string of correllation coefficients of the x vector
+     ⍝                         with itself shifted over one step at a time.
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ CorrelationMatrix    the Pearson Correlation between all variables
+     ⍝                   cm ← CorrelationMatrix   vov
+     ⍝
+     ⍝   Argument:   vov:  a  vector_○f_data_vectors all of the same length
+     ⍝   Result:     cm:   a matrix of the correlation coefficient between each pair
+     ⍝                     of variables.  The matrix is symetrical about the diagonal
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ CrossCorr      determine a "time" shift between two variables
+     ⍝                   cc ← CrossCorr  x y
+     ⍝
+     ⍝   Arguments:  x y:   two vectors of equal length.
+     ⍝   Result:     cc:    a string of correlation coefficients between the x vector
+     ⍝                      and the y vector where succeeding values are dropped from
+     ⍝                      the end of x and the beginning of y.  A "bump" would
+     ⍝                      indicate a correlation shifted in "time" where y lags x.
+     ⍝                      Switching x and y would indicate x lagging y.
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ CrossTabs      Chi-Square analysis of two "catagorical" vectors.
+     ⍝                    ns ← CrossTabs  v w
+     ⍝
+     ⍝   Arguments:  v w:  two vectors of the same length of "categorical" data.
+     ⍝                     The variables a usualy coded to match the responses to
+     ⍝                     questionaires or otherwise counted data.
+     ⍝                     v could be political party and w could be religion asked
+     ⍝                     of a group of people.  v might be coded: 1=Jewish,
+     ⍝                     2=Catholic, 3=Muslim, 4=Morman, etc.  w might be coded:
+     ⍝                     1=Democratic, 2=Republican, 3=Independent, 4=Communist....
+     ⍝                     A matrix is formed that would have the count for each
+     ⍝                     pair of options.  The rows will be religion; the columns
+     ⍝                     will be party.
+     ⍝                     99 is interpreted as Missing and the data are uncounted.
+     ⍝                     ¯1 is interpreted as deliberately unanswered and excluded
+     ⍝                     from the Chi-Square calculation.
+     ⍝                     The question would then be: is the distribution of party
+     ⍝                     the same for all religions.  Row and column totals and
+     ⍝                     the grand total of the cells are calculated.  Each cell
+     ⍝                     value, if everything is "as expected", would be its row
+     ⍝                     total times its column total divided by the grand total.
+     ⍝                     The square of the sum of the deviations of cell values
+     ⍝                     from their expected values is a Chi-Square statistic with
+     ⍝                     degrees-of-freedom being one less than the number of
+     ⍝                     active cells.  Chi-Square =1 : totally expected pattern
+     ⍝                                               =0 : unlikely pattern
+     ⍝
+     ⍝   Result:   a namespace with the variables:
+     ⍝                     CT_ChiSquare_DOF  CT_Alpha  CT_Cell_Counts  CT_Deltas
+     ⍝                     CT_RowPercents  CT_ColumnPercents  CT_Overall_Percents
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ Descrete Fourier Transforms
+     ⍝       there are four functions: DFT FFT IDFT and IFFT
+     ⍝       They all take a vector as an argument and all deliver two things:
+     ⍝             the expected output:  for DFT and FFT -- a complex vector
+     ⍝                                   for IDFT and IFFT -- a realvector
+     ⍝                                   a name space with: ComplexVector  Real Imag
+     ⍝                                     Power  Phase and R_I_Matrix
+     ⍝                                     where the real and imaginary values <1E¯9
+     ⍝                                     have been forced to zero (usually created
+     ⍝                                     by round-off error.
+     ⍝
+     ⍝      cvector ns  ←  DFT  x       (x is a real vector, usually a time series)
+     ⍝              The DFT is by the raw definition of a discrete transform and is
+     ⍝              of order n-squared.   That means slow for long x vectors >4000.
+     ⍝              The x vector can be of any length (an advantage).
+     ⍝
+     ⍝      cvector ns  ←  FFT  x  (x is a real vector, usually a time series)
+     ⍝              The Fast Forier Transform is of order n log n.  Much faster.
+     ⍝              The length of the x vector should be a power of 2.  If it isn"t,
+     ⍝              it is padded to the next power with zeros.
+     ⍝
+     ⍝      rvector ns  ← IDFT  c  (c: a complex vector, usually the output of a DFT)
+     ⍝              The IDFT is by the raw definition of a inverse discrete transform
+     ⍝               and is of order n-squared.   That means slow for long x vectors:
+     ⍝               >4000.  The c vector can be of any length (an advantage).
+     ⍝
+     ⍝      rvector ns  ← IFFT  c  (c: a complex vector, usually the output of a FFT)
+     ⍝              The Fast Inverse Transform is of order n log n.  Much faster.
+     ⍝              The length of the x vector should be a power of 2.  If it isn"t,
+     ⍝              it is padded to the next power with zeros.
+     ⍝
+     ⍝       You should expect  (⊃ IDFT ⊂ DFT x) to equal x to within round-off
+     ⍝                     and  (⊃ IFFT ⊂ FFT x) to equal x to within round-off
+     ⍝
+     ⍝       If the padding is almost equal to the length of the data, the salient
+     ⍝       features of the power spectrum are pretty much the same when the actual
+     ⍝       number of frequencies in x are few.
+     ⍝       Random noise of 100% of the "pure" signal leaves the bigger frequency
+     ⍝       bins recognizable!
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ LeadLag       line up the positions of sequelnced data
+     ⍝              vov  ←  LeadLag  vov updown {fill {cut_bottom {cut_top}}}
+     ⍝
+     ⍝   There are times when data are a function of time, that you need
+     ⍝   to "line stuff up".   Rainfall and river level for example.  The
+     ⍝   river sizes at a later time than when the rain fell.   What you
+     ⍝   order actually arrives later.  Some materials need to be ordered
+     ⍝   before others to have everyting ready for the construction job.
+     ⍝   Early decision college offers might be accepted earlier than
+     ⍝   regular offers.
+     ⍝
+     ⍝   Input:   related set (vector) of variables, (all the same length)
+     ⍝            an equal size vector of how much each variable should be
+     ⍝                 lifted (+) or pushed down (-) or left alone (0)
+     ⍝            what the "fill" value should be: "L" last value before
+     ⍝                 the fill or "Z" zero fill or "B" for blank (character
+     ⍝                 data) or a number (which could be 0).  Default=0.
+     ⍝            should the bottom of all variables be lopped off below the
+     ⍝                 bottom of the biggest "lifted" variable (1) or not (0)
+     ⍝                 Defaulted to 1.
+     ⍝            should the top of all variables be lopped off down to the
+     ⍝                 top of the biggest "pushed down" variable (1) or not (0)
+     ⍝                 Defaulted to 1.
+     ⍝   OutPut:  the shifted input data
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ ModelChebyshev    make a series of Chebyshev polynomials
+     ⍝             vop  ←  ModelChebyshev  nd order
+     ⍝
+     ⍝   Input:      nd:  the number of data points for each polynomial
+     ⍝            order:  how many polynomials
+     ⍝   OutPut:  a vecctor of polynomials of increasing order
+     ⍝
+     ⍝       the advantage of these polynomials is that they are scaled ¯1 to 1 and
+     ⍝       most significantly they are orthogonal. I.e., their correlation matrix
+     ⍝       is the identity matrix.  Thus they can be used to do regressions safely
+     ⍝       and the coefficients can be interpreted as slope, bend, wiggle, etc.
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ ModelQuadratic    make every order 2 (squares and cross-products) out of vov
+     ⍝             qvov names  ←  ModelQuadratic vov
+     ⍝
+     ⍝   Input:     vov:  a vector of data vectors
+     ⍝   Output:   qvov:  a vector of the squares and cross-products of the input.
+     ⍝            names:  identifiers for the qvov:  A B C D...AA BB...AB AC...BC....
+     ⍝       qvov ≡  the original vectors, followed by their squares, followed by
+     ⍝               all of the unique cross prodlucts, in logical order
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ PrincipalComponents      one orthogonalization of data
+     ⍝             ns  ←  PrincipleComponents  data
+     ⍝
+     ⍝   Input:  data:  a vector of vectors (padded with zeros to be of equal length)
+     ⍝            or    a matrix with variables as columns
+     ⍝   Output:   ns:  a namespace with:
+     ⍝        PCOMP_Table -- the entire picture of the analysis as text
+     ⍝     parts of that table  but as numbers
+     ⍝        PCOMP_Components -- columns in order of explained variance (numerical)
+     ⍝                            indicating the "importance" of each data variable
+     ⍝                            in that component
+     ⍝        PCOMP_Percent -- variance explained by each component
+     ⍝        PCOMP_CumulativePercent -- cum.% variance explained by each component
+     ⍝        PCOMP_EigenValues -- pivots generating the component matrix ("impact")
+     ⍝     and
+     ⍝        PCOMP_factors -- the data expressed as "factors".  The "regression" of
+     ⍝                         each data vector with the Components as coefficients
+     ⍝                         or weightings.
+     ⍝        PCOMP_FactorsSorted --Each factor sorted.  Indicates which data
+     ⍝                                  observations had the greatest impact.
+     ⍝        PCOMP_FactorCovarianceMatrix -- cross-product of the factors
+     ⍝        PCOMP_DataCorrelationMatrix -- correlations of the data
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ RegressChebyshev         regression using orthogonal Chebyshev variables
+     ⍝            ns ← {var_names} RegressChebyshev y x order
+     ⍝
+     ⍝   Inputs:  right:     y:  the dependent (response) variable (Y)
+     ⍝                       x:  the independent (X) variable
+     ⍝                   order:  the highest power Chebyshev polynomial
+     ⍝            left:  variable names for Y and X.  Defaults to "Y" and "X".
+     ⍝   Output:  a namespace with the Forsythe regression namespace, and the results
+     ⍝            of the Chebyshev regression
+     ⍝
+     ⍝      Because a Chebyshev regression requires the X values to be at particuarly
+     ⍝      located positions, The data are first regressed with Forlsythe Orthogonal
+     ⍝      polynomials (orthogonality insures that the regression will not fail).
+     ⍝      That regression is then used to calculate Y values at the Chebyshev X
+     ⍝      values.  Then the C_Y and C_polynomials (based on C_X) can be computed.
+     ⍝      The underlying statistics and Anova are those of the Forsythye regression
+     ⍝      The reason for doing the Chebyshev regression is that the coefficients
+     ⍝      are interpretable. The first C_coefficient is the average of C_Y (not Y).
+     ⍝      The second coefficient is the tilt or slope of the data.  The third is
+     ⍝      the parabolic bend to the data.  The fourth is the "cubic" wiggle.  etc.
+     ⍝      Given that Chebyshev polynomials have maximum amplitudes of +-1, you get
+     ⍝      a glimpse of the "shape" of your Y data.  Thus it is easy to compare sets
+     ⍝      of Y data.
+     ⍝
+     ⍝      Things contained in the output namespace:
+     ⍝          Results of the Fourier Regression:  its output namespace: Fourier_ns
+     ⍝            as well as some extracted info:
+     ⍝              F_Yhat  F_Statistics  F_Residuals  F_ResultTable  F_AnovaTAble
+     ⍝              F_ResidualsTable F_DigitsLost (due to regression: usually 0)
+     ⍝          Results of the Chebyshev regression:
+     ⍝              C_Coefficients  C_X  C_Y  C_Yhat  C_Residuals  C_DigitsLost
+     ⍝              and the ChebyshevPolynomials
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ RegressForsythe     an orthogonal regression
+     ⍝            ns ← {var_names} RegressForsythev y x order
+     ⍝
+     ⍝   Inputs:  right:
+     ⍝                       y:  the dependent (response) variable (Y)
+     ⍝                       x:  the independent (X) variable
+     ⍝                   order:  the highest power Chebyshev polynomial
+     ⍝            left:
+     ⍝                   variable names for Y and X.  Defaults to "Y" and "X".
+     ⍝   Output:  a namespace with Forsythe regression results:
+     ⍝
+     ⍝      Because the Forsythe polynomials are orthogonal, there is no loss of
+     ⍝      accuracy in the solution due to inter-correlation of the "X" variables as
+     ⍝      there is with a straight polynomial regression.
+     ⍝
+     ⍝      The name space includes:
+     ⍝           X  Y  Yhat  Coefficients  Results  AnovaTable  Statistics
+     ⍝           Residuals  ResidualsTable
+     ⍝           ForsythePolynomialsOnX  ForsytheCoeffs
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ RegressFourier      a regression using sines and cosines
+     ⍝            ns ← {var_names} RegressFourier y x order
+     ⍝
+     ⍝   Inputs:  right:     y:  the dependent (response) variable (Y)
+     ⍝                       x:  the independent (X) variable
+     ⍝                   order:  the number of (sine and cosine) terms
+     ⍝            left:  names for Y and X.  Defaults to "Y" and "X".
+     ⍝
+     ⍝   Output:  a namespace with Fourier regression results:
+     ⍝              Names X  Y  Yhat  Residuals  ResidualsTable
+     ⍝              AnovaTable  Results  Statistics  DigitsLost
+     ⍝              FourierXmatrix:  columns:  1  Sine Cosine S C S C ...
+     ⍝              Coefficients:    constant sine cos sin cos ...
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ RegressMultipleLinear      standard regression (not done as y⌹x)
+     ⍝            ns  ←  (var_names) RegressMultipleLinear y vov
+     ⍝
+     ⍝   Inputs:  right:     y:  the dependent (response) variable (Y)
+     ⍝                     vov:  the independent (X) variables (vectors)
+     ⍝            left:  names for Y and Xs.  Defaults to "Y" and "X1" "X2" "X3" ...
+     ⍝
+     ⍝   Output:  a namespace with regression results:
+     ⍝              Xmatrix  Y  Yhat  Residuals  ResidualsTable
+     ⍝              AnovaTable  Results  Statistics  DigitsLost  ConditionNumber
+     ⍝              Coefficients  Coefs_byQuadDivide  X_names  Y_name
+     ⍝              Max_Covariance  X_CorrelationMatrix
+     ⍝
+     ⍝         If you are working on a 16 digit platform, 16-DigitsLost is about how
+     ⍝         many reliable digits there are in the coefficients.  If that is less
+     ⍝         3, I wouldn"t trust the results (due to correlation between the Xs).
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ RegressPolynomial      standard regression on powers of x (not done as y⌹x)
+     ⍝            ns  ←  (var_names) RegressPolynomial y x
+     ⍝
+     ⍝   Inputs:  right:     y:  the dependent (response) variable (Y)
+     ⍝                       x:  the independent (X) variable
+     ⍝            left:  names for Y and Xs.  Defaults to "Y" and "X1" "X2" "X3" ...
+     ⍝
+     ⍝   Output:  a namespace with regression results:
+     ⍝              Xmatrix  X  Y  Yhat  Residuals  ResidualsTable
+     ⍝              AnovaTable  Results  Statistics  DigitsLost  ConditionNumber
+     ⍝              Coefficients  Coefs_byQuadDivide  X_names  Y_name
+     ⍝              Max_Covariance  X_CorrelationMatrix
+     ⍝
+     ⍝         If you are working on a 16 digit platform, 16-DigitsLost is about how
+     ⍝         many reliable digits there are in the coefficients.  If that is less
+     ⍝         3, I wouldn"t trust the results (due to correlation between the Xs).
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ SimultaneousEquations        solve a set of linear algebraic equations
+     ⍝                 soln_vector  digits_lost  ←  SimultaneousEquations Amat Rhs
+     ⍝
+     ⍝   Inputs:  Amat -- the coefficients matrix
+     ⍝             Rhs -- the right hand side
+     ⍝
+     ⍝   The solutions is not done by:  Rhs ⌹ Amat , but rather in a manner that
+     ⍝   checks the pivots to estimate digit_lost.   When working on a 16 digit
+     ⍝   platform, 16-digits_lost is about how many reliable digits there are in the
+     ⍝   solution.  If this falls below 3, I wouldn"t trust the results at all.
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ Statistics           get means, std.dev, etc for a set of x vectors
+     ⍝               ns  ←  {names}  Statistics  vov
+     ⍝
+     ⍝   Input:      vov:  a vector of variable vectors.
+     ⍝             names:  optional names for the variables
+     ⍝   Output:   ns:  a namespace containing:
+     ⍝                  StatisticsTable  Data_vov
+     ⍝                  DataMatrix (padded with zeros if necessary)
+     ⍝                  CorrelationMatrix (of DataMatrix)
+     ⍝                  and all of the measures in the table individually numerical
+     ⍝                      vectors, just in case you want to use them.
+     ⍝
+     ⍝                  Statistics table lists for each variable:
+     ⍝                      IndesCount  Average  Min  Max  Std_dev  Skew  Kurtosis
+     ⍝                      Coefficient_of_variation  %_=_0  %_near_0  {name}
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ StepWiseAll       multiple linear regression all allowable variables per step
+     ⍝            ns  ←  {yxnames}  StepWiseAll  y  vox  fi  fo (starting_indecies)
+     ⍝
+     ⍝   Inputs:      y:  the dependent variable to be fitted with x
+     ⍝              vox:  a vector of the independent variables
+     ⍝               fi:  the lower limit of Fratio among the "out" variables that
+     ⍝                    will determine it they are allowed "in".
+     ⍝               fo:  the Fratio limit below which an "in" variable will be
+     ⍝                    kicked out.
+     ⍝               si:  The indecies of x variables that are initially "in" the
+     ⍝                    regression.  This can include any legitimate index,
+     ⍝                    including ⍬ and all of them.
+     ⍝          yxnames:  a vector of optional variable names starting with the Y
+     ⍝                    variable.  It must have 1+#_of_X_variables text names.
+     ⍝
+     ⍝   Output:  ns:  a namespace containing for the final regression:
+     ⍝                     AnovaTable            distribution of sums_of_squares
+     ⍝                     Coefficients          not done by y⌹x
+     ⍝                     Results               stats for each variable
+     ⍝                     Coefs_byQuadDivide
+     ⍝                     DigitsLost            on a 16 digit platform 16-DL <3 or 4
+     ⍝                                           is worrisome
+     ⍝                     ConditionNumber
+     ⍝                     In_Indecies  Out_Indecies
+     ⍝                     In_Names  Out_Names
+     ⍝                     Y_name     X_names
+     ⍝                     Max_Covariance
+     ⍝                     Statistics            including residuals analyses
+     ⍝                     Xmatrix  Y  Yhat
+     ⍝                     Residuals             (Y-Yhat)
+     ⍝                     ResidualTable
+     ⍝                     X_CorrelationMatrix   of the "in"s
+     ⍝                 and for the process:
+     ⍝                     InOut_path            what happened at each step
+     ⍝                     In_Table              statistics for each step regression
+     ⍝                     Out_Table             statistics for each step regression
+     ⍝                     progress              the Fratios along the way
+     ⍝                     NsIn   NsOut          the last step"s regression info
+     ⍝
+     ⍝      If you believe that the regression should include a constant, one of the
+     ⍝      x variables (usually the first) should be all ones.
+     ⍝
+     ⍝      This regression process is iterative.  At each pass a regression is done
+     ⍝      on the "in" variables and on the "out" variables.  This provides Fratios
+     ⍝      that determine if any "in"s should be removed and if any "outs" should be
+     ⍝      added to the "in"s.  Although most of the time this is done in one pass,
+     ⍝      that is not necessarilly so.  The steps taken are itemized in the output
+     ⍝      namespace as the variable:  InOut_path.
+     ⍝
+     ⍝      All regressions are done by row reduction in order to watch the pivots
+     ⍝      to measure the degree of singularity of the  process.  This is
+     ⍝      particularly relevant in regressons involving correlated xs.  On a 16
+     ⍝      digit platform, losing 7 or 8 digits leaves answers good to 9 or 8
+     ⍝      digits.  Losing more than 13 means that you probably can"t believe the
+     ⍝      results at all.
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ StepWiseOne       multiple linear regression only one variable at a time
+     ⍝            ns  ←  {yxnames}  StepWiseOne  y  vox  fi  fo (starting_indecies)
+     ⍝
+     ⍝
+     ⍝ StepWiseAll       multiple linear regression allowable steps at a time
+     ⍝            ns  ←  {yxnames}  StepWiseAll  y  vox  fi  fo (starting_indecies)
+     ⍝
+     ⍝   Inputs:      y:  the dependent variable to be fitted with x
+     ⍝              vox:  a vector of the independent variables
+     ⍝               fi:  the lower limit of Fratio among the "out" variables that
+     ⍝                    will determine it they are allowed "in".
+     ⍝               fo:  the Fratio limit below which an "in" variable will be
+     ⍝                    kicked out.
+     ⍝               si:  The indecies of x variables that are initially "in" the
+     ⍝                    regression.  This can include any legitimate index,
+     ⍝                    including ⍬ and all of them.
+     ⍝          yxnames:  a vector of optional variable names starting with the Y
+     ⍝                    variable.  It must have 1+#_of_X_variables text names.
+     ⍝
+     ⍝   Output:  ns:  a namespace containing for the final regression:
+     ⍝                     AnovaTable            distribution of sums_of_squares
+     ⍝                     Coefficients          not done by y⌹x
+     ⍝                     Results               stats for each variable
+     ⍝                     Coefs_byQuadDivide
+     ⍝                     DigitsLost            on a 16 digit platform 16-DL <3 or 4
+     ⍝                                           is worrisome
+     ⍝                     ConditionNumber
+     ⍝                     In_Indecies  Out_Indecies
+     ⍝                     In_Names  Out_Names
+     ⍝                     Y_name     X_names
+     ⍝                     Max_Covariance
+     ⍝                     Statistics            including residuals analyses
+     ⍝                     Xmatrix  Y  Yhat
+     ⍝                     Residuals             (Y-Yhat)
+     ⍝                     ResidualTable
+     ⍝                     X_CorrelationMatrix   of the "in"s
+     ⍝                 and for the process:
+     ⍝                     InOut_path            what happened at each step
+     ⍝                     In_Table              statistics for each step regression
+     ⍝                     Out_Table             statistics for each step regression
+     ⍝                     progress              the Fratios along the way
+     ⍝                     NsIn   NsOut          the last step"s regression info
+     ⍝
+     ⍝      If you believe that the regression should include a constant, one of the
+     ⍝      x variables (usually the first) should be all ones.
+     ⍝
+     ⍝      This regression process is iterative.  At each pass a regression is done
+     ⍝      on the "in" variables and on the "out" variables.  This provides Fratios
+     ⍝      that determine if any "in"s should be removed and if any "outs" should be
+     ⍝      added to the "in"s.  First one out→in variable will be chosen if one is
+     ⍝      available.  When all "out"s can"t get in, one "in" variable is selected
+     ⍝      if available.  When no variable can move the process stops.  The steps
+     ⍝       taken are itemized in the output namespace as the variable:  InOut_path
+     ⍝
+     ⍝      All regressions are done by row reduction in order to watch the pivots
+     ⍝      to measure the degree of singularity of the  process.  This is
+     ⍝      particularly relevant in regressons involving correlated xs.  On a 16
+     ⍝      digit platform, losing 7 or 8 digits leaves answers good to 9 or 8
+     ⍝      digits.  Losing more than 13 means that you probably can"t believe the
+     ⍝      results at all.
+     ⍝
+     ⍝===============================================================================
+     ⍝
+     ⍝ TukeyWindow      "round off" the ends of a vector
+     ⍝                  wv  ←  {window_width}  TukeyWindow  v
+     ⍝
+     ⍝   Inputs:       v:  a reasonably long vector
+     ⍝               w_w:  optionally the fraction of the data effected at each end.
+     ⍝                     Defaults to .25; affecting a quarter of the input vector
+     ⍝                     on each end.
+     ⍝   Output:      wv:  the windowed vector.
+     ⍝
+     ⍝          v is usually a sound signal: music, speech, an accustic event or
+     ⍝          noise recording
+     ⍝.
+     ⍝          Apply the original Tukey-Interim-Window.  This is "cosine" rounding
+     ⍝          at each end of a time string to improve the apparent power spectrum
+     ⍝          and Fourier Transform (DFT and FFT).  Sharp "edges" cause spurious
+     ⍝          harmonics in the FFT, and this is supposed to reduce that problem.
+     ⍝
+     ⍝     cosine: goes 1 to ¯1  <::>  1-cos  goes 0 to 2  <::>  ÷ by 2  goes 0 to 1
+     ⍝
+     ⍝                                 *---.....---*
+     ⍝                              *                 *
+     ⍝                           *                       *
+     ⍝                          *                         *
+     ⍝                         *                           *
+     ⍝                      *                                 *
+     ⍝                ****                                       ****
+     ⍝
+     ⍝
+     ⍝===============================================================================
+     ⍝===============================================================================
+     ⍝===============================================================================
+     ⍝
+     ⍝ Distrib      a namespace with functions that calculate various distributions.
+     ⍝
+     ⍝             P p :: the cumulative probability (integral from the left (1-⍺)
+     ⍝             A ⍺ :: the tail probability (integral to the right)      (1-p)
+     ⍝             C c :: critical ChiSquare
+     ⍝             D d :: degrees of freedom:   DOF  (for F_ratio: denominator DOF)
+     ⍝             N n :: degrees of freedom:   numerator DOF for F_ratio
+     ⍝             F f :: critical F_ratio
+     ⍝          big letter ≡ return  ⋄  little letters ≡ RighttHandArg
+     ⍝
+     ⍝
+     ⍝-------------------------------------------------------------------------------
+     ⍝ Normal:    ⍺ ← Normal_A     x      you give it x, it returns ⍺ (tail beyond x)
+     ⍝            p ← Normal_P     x      returns integral up to x
+     ⍝            y ← Normal_y     x      the ordinate of the normal curve at x
+     ⍝            x ← Normal_Xa    ⍺      returns the x for that ⍺
+     ⍝            x ← Normal_Xp    p      returns the x for that cumulative dist.
+     ⍝
+     ⍝
+     ⍝-------------------------------------------------------------------------------
+     ⍝ student t: ⍺ ← Student_A    t dof  return ⍺ for a given t and deg_of_freedom
+     ⍝            p ← Student_P    t dof  return p   the most common usage
+     ⍝            ⍺ ← Student_Atd  t dof  return ⍺   same as Student_A but consistant
+     ⍝            p ← Student_Ptd  t dof  return p
+     ⍝
+     ⍝            t ← Student_Tad  ⍺ dof  return t
+     ⍝            t ← Student_Tpd  p dof  return t
+     ⍝            d ← Student_Dta  t ⍺    return Degrees_Of_Freedom  (DOF)
+     ⍝            d ← Student_Dtp  t p    return DOF
+     ⍝
+
+     ⍝-------------------------------------------------------------------------------
+     ⍝ ChiSquare: ⍺ ← ChiSq_A      c dof  given ChiSq and DOF return alpha
+     ⍝            p ← ChiSq_P      c dof  given ChiSq and DOF return p (cum. dist.)
+     ⍝            ⍺ ← ChiSq_Acd    c dof  given ChiSq and DOF return alpha
+     ⍝            p ← ChiSq_Pcd    c p    given ChiSq and DOF return p
+
+     ⍝            c ← ChiSq_Cad    ⍺ dof  given ⍺ and dof return critical ChiSquare
+     ⍝            c ← ChiSq_Cpd    p dof  given cum.dist. return critical ChiSquare
+     ⍝            d ← ChiSq_Dca    c ⍺    given ChiSq and ⍺ return DOF
+     ⍝            d ← ChiSq_Dcp    c p    given ChiSq and p return DOF
+
+     ⍝            ? ← ChiSq_CAD    c ⍺ d  substitute one of inputs with ⍬, get that
+     ⍝                                    c ← ChiSq_CAD ⍬ ⍺ d
+     ⍝                                    ⍺ ← ChiSq_CAD c ⍬ d
+     ⍝                                    d ← ChiSq_CAD c ⍺     or C ⍺ ⍬
+     ⍝            ? ← ChiSq_CPD    c p d  substitute one of inputs with ⍬, get that
+     ⍝
+     ⍝-------------------------------------------------------------------------------
+     ⍝ F_ratio    ⍺ ← Fratio_A     F n d  return ⍺    the most common usage
+     ⍝            p ← Fratio_P     F n d  return p    "
+     ⍝            ⍺ ← Fratio_Afnd  F n d  return ⍺    same as Fratio_A but consistant
+     ⍝            p ← Fratio_Pfnd  F n d  return p
+     ⍝
+     ⍝            f ← Fratio_Fand  ⍺ n d  return critical F_ratio
+     ⍝            f ← Fratio_Fpnd  p n d  return critical F_ratio
+     ⍝            n ← Fratio_Nfad  f ⍺ d  return critical F_ratio
+     ⍝            n ← Fratio_Nfpd  f p d  return critical F_ratio
+     ⍝            d ← Fratio_Dfan  f ⍺ d  return critical F_ratio
+     ⍝            d ← Fratio_Dfpn  f p n  return critical F_ratio
+     ⍝
+     ⍝            ? ← Fratio_FAND  f ⍺ n d  subst. 1 arg. with ⍬, get that one
+     ⍝            ? ← Fratio_FPND  f p n d  subst. 1 arg. with ⍬, get that one
+     ⍝
+     ⍝===============================================================================
+     ⍝===============================================================================
+     ⍝===============================================================================
+     ⍝
+     ⍝ Dutils    a namespace with functions used by the statistical and distributio
+     ⍝           functions.  Not particularly for general use (but not worthless).
+     ⍝
+     ⍝===============================================================================

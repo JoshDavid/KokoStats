@@ -1,0 +1,16 @@
+ clean←{what}RemoveExcessBlanks vector;Rem;⎕ML;⎕IO
+
+     ⍝∇  remove extraneous blanks/w:  i    am => i am
+     ⍝∇        'MISISIPPI' ← 'S' RemoveExcessBlanks 'MISSISSIPPI'
+     ⍝∇          3 0 4 0 5 ← RemoveExcessBlanks 0 0 3 0 0 0 0 4 0 0 0 5 0 0 0 0
+     ⍝∇    'this is clean' ← RemoveExcessBlanks '   this  is clean    '
+
+ ⎕ML←⎕IO←1
+ :If 0=⎕NC'what' ⋄ what←⊃1↑0⍴,vector ⋄ :EndIf ⍝  either ' '  or 0
+
+ Rem←{1↓⍺{{⍵∨1⌽⍵}⍵≠⍺}⍺,⍵}
+ clean←(what Rem vector)/vector
+     ⍝ pull of all leading what's
+ clean←(~1↓∧\(what,clean)∊what)/clean
+
+ :Return

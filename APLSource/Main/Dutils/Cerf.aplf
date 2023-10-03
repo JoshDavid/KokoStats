@@ -1,0 +1,14 @@
+ cerf←Cerf x;kernel;f;⎕ML;⎕IO
+     ⍝  Complimentary error function: good to at least 12 and usually more digits
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ kernel←{*-⍵*2}
+ f←(2÷(○1)*0.5)
+
+ :If x≤4.06
+     cerf←1-f×kernel Romberg_Trap 0 x
+ :Else
+     cerf←f×kernel Romberg_Trap x 50
+ :EndIf
+
+ :Return

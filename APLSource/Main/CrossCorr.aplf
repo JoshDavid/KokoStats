@@ -1,0 +1,15 @@
+ {cc}←CrossCorr(x y);i;⎕ML;⎕IO
+
+     ⍝∇ The autocorrelation of x (end  held still, leading values are dropped) and
+     ⍝∇                        y (moving forward, trailing values are dropped)
+     ⍝∇ Gives the correlation over time of recent history
+
+ ⎕ML←⎕IO←1
+ cc←⍬
+ :For i :In ¯3↓⍳≢x
+
+     cc,←Dutils.Corr x y
+     x←1↓x ⋄ y←¯1↓y
+ :EndFor
+
+ :Return

@@ -1,0 +1,28 @@
+ T←RandNorm N;⎕ML;⎕IO
+
+     ⍝∇ t ← ∆RANDN n  --  deliver n normally distributed random numbers:
+     ⍝∇     ──────           mean=0, std=1
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ T←(2○○2×?N⍴0)×0.5*⍨-2×⍟?N⍴0
+ :Return
+
+
+     ⍝===============================================================
+     ⍝    three times slower on a million numbers
+ T←N⍴0
+ :For I :In ⍳12
+     T+←?N⍴0
+ :EndFor
+ T←T-6
+
+
+     ⍝    five times slower yet than that on a million numbers:  15x slower
+ T←N⍴0
+ :For I :In ⍳N
+     T[I]←¯6++/?12⍴0
+ :EndFor
+ T←T-6
+
+     ⍝    untimed: (but it takes up a lot of space!!!)
+ T←6-+/N 12⍴?(12×N)⍴0

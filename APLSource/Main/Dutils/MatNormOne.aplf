@@ -1,0 +1,4 @@
+ n←MatNormOne m;⎕ML;⎕IO
+ ⎕ML←⎕IO←1
+ n←⊃⌈/SumByTwos¨↓[1]m
+ :Return

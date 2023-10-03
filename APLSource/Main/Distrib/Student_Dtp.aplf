@@ -1,0 +1,12 @@
+ dof←Student_Dtp(t p);Fun;⎕ML;⎕IO
+
+     ⍝∇  dof ← Student_D (t alpha)  -- degrees needed to get a t at the given alpha
+     ⍝∇                    alpha is the "tail" area  alpha = 1-p (the cumulatlive
+     ⍝∇                    distribution )
+
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ Fun←{p-Student_P t ⍵}
+ dof←⌈Fun ##.Dutils.HalfStepI 1 250 24
+
+ :Return

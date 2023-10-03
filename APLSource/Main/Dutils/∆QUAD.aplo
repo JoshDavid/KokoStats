@@ -1,0 +1,12 @@
+ AREA←(FQ ∆QUAD)ABN;A;B;N;C;H;⎕ML;⎕IO
+
+⍝∇ area ←((f qmethod) ∆QUAD) a b no_of_panels -- do a whole integral of f
+⍝∇                     ─────                     from a to b using the
+⍝∇                                               supplied quadrature algo.
+
+ ⎕ML←⎕IO←1
+ A B N←ABN
+ H←(B-A)÷N×2
+ C←(A-H)+2×H×⍳N
+
+ AREA←+/FQ¨C,¨H

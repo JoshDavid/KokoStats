@@ -1,0 +1,28 @@
+ (real ns)←IDFT cx;N;n;I;k;dft;rn;idft;mat;mzero;vec;⎕ML;⎕IO
+     ⍝∇  Inverse Discrete Fourier Transform by its definition :  slow for big vectors: >10000
+     ⍝∇  x can be of any length; not necessarily 2*n
+     ⍝∇
+     ⍝∇ Input:    a vector of complex numbers that is the ouput of DFT of x
+     ⍝∇ Output:   x the input to the DFT
+     ⍝∇           a namespace with: idft_as_matrix, real, imaginary, complex_vector, power and phase
+
+ ⎕ML←⎕IO←1
+ N←≢cx ⋄ I←0J1 ⋄ rn←÷N
+ idft←⍬
+
+ :For k :In ¯1+⍳N
+     idft,←rn×+/(cx)×*(○2)×I×k×(¯1+⍳N)÷N
+ :EndFor
+
+ mat←(9○idft),[1.5](11○idft)
+ ⍝  get rid of near zeros  1E-9
+ mzero←1E¯9>|,mat
+ (mzero/,mat)←0
+
+ ns←⎕NS''
+ ns.R_I_Matrix←mat
+ ns.Real←real←mat[;1]
+ ns.Imag←mat[;2]
+ ns.ComplexVector←vec←{⍎(⍕⊃⍵),'j',(⍕2⊃⍵)}¨↓mat
+ ns.Power←10○vec
+ ns.Phase←12○vec

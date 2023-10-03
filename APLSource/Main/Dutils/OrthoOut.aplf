@@ -1,0 +1,37 @@
+ nso←OrthoOut nsc;b;seob;st_t;nb;Result;u;v;e;s;AnovaT;⎕ML;⎕IO
+
+     ⍝∇ make the anova and tabulation tables
+
+ ⎕ML←⎕IO←1
+ nso←⎕NS''
+
+ b seob st_t←nsc.(b seob st_t)
+ nb←≢b
+ Result←((nb+2),6)⍴0
+ Result[;1]←' i ' '---',(¯1+⍳nb)
+ Result[;2]←'         B      ' '  --------------',b
+ Result[;3]←'    std. err.   ' '  --------------',seob
+ Result[;4]←'  stud_t' '  ------',st_t
+ Result[;5]←' F to keep' ' --------',(2 RndDP 99999⌊st_t*2)
+ Result[;6]←' Alpha' ' ------',(3 RndDP nsc.pvalues)
+
+ u←'   Sum of Squares ' ' DOF' '    Mean Square  ' '   F ratio ' '   Alpha '
+ v←'  ----------------' ' ---' '  ---------------' '  ---------' '  -------'
+ e←'  ================' ' ===' '  ===============' '  =========' '  ======='
+ s←'        Source  ' ' -----------------' ' constant ' ' due to reg.' ' error   ' ' ==================' ' explained: reg+err ' ' total '
+
+
+ AnovaT←8 5⍴⊂'  '
+ AnovaT[1;]←u
+ AnovaT[2;]←v
+ AnovaT[3;]←(5 RndDP nsc.(sosbo dofbo msbo)),'  ' '  '
+ AnovaT[4;]←(5 RndDP nsc.(sosdr dofb msdr fratio alpha))
+ AnovaT[5;]←(7 RndDP nsc.(soser dofe msar)),'  ' '  '
+ AnovaT[6;]←e
+ AnovaT[7;]←(5 RndDP nsc.(sostc doftc)),'  ' '  ' '  '
+ AnovaT[8;]←(5 RndDP nsc.(sost doft)),'  ' '  ' '  '
+ AnovaT←s,AnovaT
+
+ nso.(Result AnovaT)←Result AnovaT
+
+ :Return

@@ -1,0 +1,9 @@
+ AREA←(F ∆GQ)CH;C;H;⎕ML;⎕IO
+
+⍝∇ Gauss Quadrature
+⍝∇ area ← f ∆GQ c h -- do one panel integration using GLOBALS: QZ QW
+⍝∇          ───        a panel is defined by its center and halfwidth
+ ⎕ML←⎕IO←1
+ C H←CH
+ :If 0=⎕NC'QW' ⋄ DEFINE_QW ⋄ DEFINE_QZ ⋄ :EndIf
+ AREA←H×+/QW×F¨C+QZ×H

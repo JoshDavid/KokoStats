@@ -1,0 +1,8 @@
+ Watcher_middle;w;⎕ML;⎕IO
+
+ ⎕ML←⎕IO←1
+ w←⎕VR'Watcher_base'
+ w←'down over' '3.3 33'∆REPLACE_STRING w
+ w←'Watcher_base' 'Watcher '∆REPLACE_STRING w
+ ⎕FX w
+ :Return

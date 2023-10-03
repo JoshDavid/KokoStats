@@ -1,0 +1,5 @@
+ n←MatNormFrob m;⎕ML;⎕IO
+ ⎕ML←⎕IO←1
+
+ n←(SumByTwos,m*2)*0.5
+ :Return

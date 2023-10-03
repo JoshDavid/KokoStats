@@ -1,0 +1,13 @@
+ N←Fratio_Nfad(F alpha dofd);Fun;⎕ML;⎕IO
+
+     ⍝∇  Return: Critical numerator-degrees-of-freedom for the F-ratio cumlulative distribution
+     ⍝∇  Given:  Critical Fratio value, alpha (tail integral), and denominator-degrees-of-freedom.
+     ⍝∇                    alpha is the "tail" area  alpha = 1-p (the cumulatlive
+     ⍝∇                    distribution)
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ Fun←{alpha-Fratio_Q F ⍵ dofd}
+ N←⌈Fun ##.Dutils.HalfStepI 1 1000 24
+ N←N⌊1000000
+
+ :Return

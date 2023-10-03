@@ -1,0 +1,26 @@
+ p←yor StepPartCorr xio;xi;xo;yo;yr;n;pr;fe;m;res;ans;b;f;f_r;uv;br;dw;dl;i;⎕ML;⎕IO
+
+     ⍝∇    not sure why
+
+ ⎕ML←⎕IO←1
+ xi xo←xio
+ yo yr←yor
+ n←⊃⌽⍴xo
+ p←⍬
+ :If n=0 ⋄ :Return ⋄ :EndIf
+ pr←fe←n⍴0
+ m←2⊃⍴xi
+
+ :For i :In ⍳n
+     res←xo[;i]
+     :If m≠0
+         ans←res StepRegressionSAE xi
+         b f f_r uv br dw dl res←ans
+     :EndIf
+     pr[i]←Corr yr res
+     ans←yo StepRegressionSAE xi,xo[;,i]
+     b f f_r uv br dw dl res←ans
+     fe[i]←¯1↑f_r
+ :EndFor
+
+ p←pr fe

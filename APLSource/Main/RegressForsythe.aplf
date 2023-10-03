@@ -1,0 +1,45 @@
+ {ns}←{vnames}RegressForsythe(y x order);⎕ML;⎕IO;n;nb;one;i;ib;xbar;fp;co;xtx;xty;b;ybar;xto;aone;dl;nsoc;inv;yhat;nsoo;nsos;in;tr;bp;bod;FPolyCoeffs;FPC
+
+     ⍝∇ do an orthjogonal Forsythe Polynomial Regression      #.MOST.FORSY
+                                                  ⍝ #.MOST.MOST∆M∆FORS_REGR
+ ⎕ML←⎕IO←1                                   ⍝ #.MOST.MOST∆M∆FORSYTHE ≡ Dutils.ForsytheX
+ ns←⎕NS''
+
+ n←≢y
+ :If 0=⎕NC'vnames' ⋄ vnames←'Y' 'Const',('X',¨⍕¨⍳¯1+≢x) ⋄ :EndIf
+
+ nb←order+1
+ one←n⍴1
+
+ i←n n⍴1,n⍴0
+ ib←nb nb⍴1,nb⍴0
+
+ xbar←Dutils.Average x
+ fp co←Dutils.MakeForsythePolys x order
+ xtx←+⌿fp*2             ⍝  all off diagonal elements are 0 except for round-off
+ xty←y+.×fp
+ b←xty÷xtx              ⍝  therefore, don't need  ⌹
+ yhat←fp+.×b
+ ybar←⊃b
+ xto←one+.×fp
+ aone←xto÷xtx
+ inv←÷{⍵+0.000001000001×⍵=0}xtx
+
+ dl←0
+ :Trap 0
+     in←⌹(⍉fp)+.×fp
+     tr←1 1⍉in
+     bp←⌈/|tr
+     in÷←bp
+     (1 1⍉in)←0
+     bod←⌈/,|in
+     dl←2 Dutils.RndDP 0⌈17+10⍟|bod
+ :EndTrap
+
+ nsoc←Dutils.OrthoCalc(x y fp b xty xtx inv xbar ybar vnames)
+ nsoo←Dutils.OrthoOut nsoc
+ nsos←Dutils.OrthoStats nsoc
+
+ ns.(AnovaTable Results ResidualsTable Statistics Yhat Residuals X Y DL Coefficients ForsythePolynomialsOnX)←nsoo.(AnovaT Result),nsos.(ResidTable Stats),nsoc.(yhat errs),x y dl b fp
+ FPC←Dutils.ForsythePolynomialCoeficients ns
+ ns.ForsythePolyCoeffs←FPC

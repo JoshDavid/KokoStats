@@ -1,0 +1,81 @@
+ NS←{yx_names}StepWiseAll(y vox fic foc i_in);r;i_x;i_out;x;headr;under;table;phead;pundr;progress;ok;ns_in;ns_out;cr;ca;mo;ma;rem;add;i;io;NO;Xnames;Yname;InTable;OutTable;NI;mout;min;out;in;coef;nr;list;in_collection;fo;Y_name;X_names;⎕ML;⎕IO
+ ''
+ ''
+     ⍝∇ Given a y and several x's (include 1 to get a constant), Fin Fout vin_start_indexes
+
+     ⍝     do a regression of  "ins"
+     ⍝     do a regression of  "outs"
+     ⍝     find if there are variables to add or variables to remove
+     ⍝     move the selected variables
+     ⍝     repeat
+
+ ⎕ML←⎕IO←1
+ NS←⎕NS''                   ⍝  this will get filled with results
+ i_in←,i_in
+
+
+ :If (0≠⎕NC'yx_names')
+     Y_name←⊃yx_names
+     X_names←1↓yx_names
+ :Else
+     X_names←(⊂'Var_'),¨⍕¨⍳≢xs
+     Y_name←'Y'
+ :EndIf
+ NS.X_names←X_names
+ NS.Y_name←Y_name
+
+ x←↑[0.5]vox
+ r←≢y
+ i_x←⍳≢vox
+ i_out←i_x~i_in
+
+     ⍝ if starting empty, pick up the highest F for all
+ :If ⍬≡⍴i_in
+     NO←Dutils.DoStepRegression y(x)
+     fo←NO.F_ix ⋄ i_in←,fo⍳⌈/fo ⋄ i_out~←i_in
+ :EndIf
+
+ progress←1 7⍴' i ' 'lose' 'gain' 'F_lose' 'F_gain' 'F_in' 'F_out'
+ InTable←1 7⍴' i ' 'F_ratio' 'unexp. var.' ' Durb-W' '   big res ' ' dig lost' 'In vars'
+ OutTable←1 7⍴' i ' 'F_ratio' 'unexp. var.' ' Durb-W' '   big res ' ' dig lost' 'Out vars'
+ io←1 5⍴' i' '# in' '# out' 'Indices In' 'Indices Out'
+ io⍪←0(≢i_in)(≢i_out)i_in i_out
+
+     ⍝  Loop until done
+ ok←1 ⋄ i←0 ⋄ in_collection←⊂i_in
+ :While ok
+     i+←1
+     ⍝  regress    "in"   and   "out"
+     NI←Dutils.DoStepRegression y(x[;i_in])
+     InTable⍪←i,NI.(F_ratio sos_err DurbinWatson big_e DL),⊂i_in
+     NO←Dutils.DoStepRegression NI.errs(x[;i_out])
+     OutTable⍪←i,NO.(F_ratio sos_err DurbinWatson big_e DL),⊂i_out
+
+     mout←NI.F_ix<foc ⋄ out←mout⌿i_in
+     min←NO.F_ix≥fic ⋄ in←min⌿i_out
+
+     :If (in≡⍬)∧(out≡⍬) ⋄ :Leave ⋄ :EndIf
+
+     i_in←{⍵[⍋⍵]}(i_in,in)~out
+     i_out←i_x~i_in
+
+     io⍪←i(≢i_in)(≢i_out)i_in i_out
+     progress⍪←i(⊂out)(⊂in)(⊂mout/NI.F_ix)(⊂min/NO.F_ix)NI.F_ratio NO.F_ratio
+
+     :If (⊂i_in)∊in_collection ⋄ :Leave ⋄ :EndIf
+     in_collection,←⊂i_in
+ :EndWhile
+
+       ⍝  final clean-up
+ coef←NI.coeff ⋄ ok←(|coef)>1E¯8
+ i_out←{⍵[⍋⍵]}i_out,(~ok)/i_in
+ i_in←ok/i_in
+
+ nr←((⊂Y_name),X_names[i_in])RegressMultipleLinear y(vox[i_in])
+ list←⍕(nr.⎕NL-2)~'X_names' 'Y_name'
+
+     ⍝  pack up NS
+ NS.(progress In_Table Out_Table In_Names In_Indecies Out_Names Out_Indies NsIn NsOut InOut_path)←progress InTable OutTable(X_names[i_in])i_in(X_names[i_out])i_out NI NO io
+ ⍎'NS.(',list,')←nr.(',list,')'
+
+ :Return

@@ -1,0 +1,5 @@
+ M←ModelChebyshev(nd order);a;x;cheb_x;⎕ML;⎕IO
+
+ ⎕ML←⎕IO←1
+ cheb_x←Dutils.MakeChebyshevPolynomialX 0 nd
+ M←1↓↓[1]Dutils.MakeChebyshevPolys cheb_x order

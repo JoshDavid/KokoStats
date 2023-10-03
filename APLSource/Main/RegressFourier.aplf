@@ -1,0 +1,92 @@
+ {ns}←{vnames}RegressFourier(y x order);⎕ML;⎕IO;To;nd;nsf;fx;fyhat;xmin;xmax;xse;xs;ys;xtx;xty;xbar;ybar;ao;a;yhat;DL;ad;i;s;t;d;as;c;ac;inv;X;nsoc;nsoo;nsos;errs;error;yps
+
+     ⍝∇  Given:   y -- dependent (response) variable
+     ⍝∇           order -- the number of sine/cosine x vectors
+     ⍝∇           vnames -- optional names for y and x (will default to Y X)
+     ⍝∇  The sine/cosine indepenent vectors are based off of ⍳n, so I don't know
+     ⍝∇    how y needs to be sampled, but using a yhat from a Forsythe regression to
+     ⍝∇    re-express the original data, perhaps that would work for this as well.
+
+ ⎕ML←⎕IO←1
+
+ To←{(×⍺-⍵)+⍺+(×⍵-⍺)×⍳1+|⍵-⍺}
+ ns←⎕NS''
+ :If 0=⎕NC'vnames' ⋄ vnames←'Y' 'X' ⋄ :EndIf
+ ns.Names←vnames
+
+ nd←≢y
+
+     ⍝  find  ys  values at the fourier  xs  interpolated into  x and y
+      ⍝ to interpolate yhat we need nd points evenly spaced from xmin to xmax
+ xmin←⌊/x ⋄ xmax←⌈/x
+ xse←xmin+(¯1+⍳nd)×(xmax-xmin)÷nd-1
+
+ xs←○2×(0,⍳nd-1)÷nd-1                                        ⍝ zero to 2×pi; uniformly spaced
+ ys←Dutils.LagrangeInterpolation x y xse 8  ⍝ use a point interpolation
+
+     ⍝  we now have a Fourier xs and ys
+     ⍝                     because the sines and cosines are orthogonal over
+     ⍝                     even spacings in x, the coefficients can be
+     ⍝                     computed one at a time.  There generally isn't
+     ⍝                     enough room to do the ∘.× game.  Order can be and
+     ⍝                     usually is equal to nd, the no. of data values.
+     ⍝
+ order←1+2×⌈0.5×order                                    ⍝ but order must be odd.
+
+ xtx←nd
+ xty←+/ys
+ xbar←Dutils.Average xs
+ ybar←Dutils.Average ys
+ ao←ybar   ⍝xty÷nd
+ a←,ao
+
+ yhat←nd⍴ao
+ DL←0
+ X←,[1.5]nd⍴1      ⍝0   ⍝¯0.3181266476387562   ⍝ turns out we need the full X matrix to calculate Cook statistics
+
+ :For i :In ⍳0.5×order-1
+     s←1○xs×i
+     X,←s
+     t←+/s×ys
+     d←+/s*2
+     as←t÷d
+     yhat+←s×as
+     xtx,←d
+     xty←xty,t
+     a,←as
+ :EndFor
+
+ :For i :In ⍳0.5×order-1
+     c←2○xs×i
+     X,←c
+     t←+/c×ys
+     d←+/c*2
+     ac←t÷d
+     yhat+←c×ac
+     xtx,←d
+     xty,←t
+     a,←ac
+ :EndFor
+
+ error←y-yhat
+ ns.Residuals←error
+ ns.Yhat←yhat
+     ⍝ ns.a←a
+
+ yps←(X)+.×(a)
+     ⍝ ns.psyhat←yps
+     ⍝ ns.pserror←ys-yps
+
+ inv←÷{⍵+0.000001000001×⍵=0}xtx
+
+ nsoc←Dutils.OrthoCalc(x y X a xty xtx inv xbar ybar vnames)
+ nsoc.yhat←yhat
+ nsoo←Dutils.OrthoOut nsoc
+ nsos←Dutils.OrthoStats nsoc
+
+ ns.Coefficients←a
+ ns.FourierXmatrix←X
+ ns.Y←y
+ ns.X←x
+ ns.DigitsLost←0
+ ns.(AnovaTable Results ResidualsTable Statistics)←nsoo.(AnovaT Result),nsos.(ResidTable Stats)

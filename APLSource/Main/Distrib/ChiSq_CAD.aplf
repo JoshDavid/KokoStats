@@ -1,0 +1,16 @@
+ res←ChiSq_CAD xad;k;X;alpha;dof;⎕ML;⎕IO
+
+      ⍝∇ return the missing element given the other 2 out of: ChiSq  alpha  dof
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ k←⊃⍸xad≡¨⊂⍬
+ X alpha dof←xad
+
+ :Select k
+ :Case 1                               ⍝  get X == ChiSquare
+     res←ChiSq_Xa alpha dof
+ :Case 2                                ⍝  get alpha
+     res←ChiSq_Q X dof
+ :Case 3                                ⍝  get degrees-of-freedom
+     res←ChiSq_Da X alpha
+ :EndSelect

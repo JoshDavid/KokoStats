@@ -1,0 +1,10 @@
+ z←n RndF v;b;d;⎕ML;⎕IO
+
+     ⍝∇  round the vector to match the largest value's decimal to n decimal places
+
+ ⎕ML←⎕IO←1
+ b←⌈/|,v
+ d←n-⌈10⍟(b+b=0)
+ z←d RndD v
+
+ :Return

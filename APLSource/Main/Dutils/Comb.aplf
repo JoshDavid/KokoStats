@@ -1,0 +1,8 @@
+ Comb←{⎕ML←2                             ⍝ ⍺-combination matrix of ⍳⍵.
+     ↑↑(⊂⊂1 0⍴0){                        ⍝ base-case: [0 ⍵].
+         ¯1↓↑{                           ⍝ removing base case from,
+             (⍪/⌽{⎕IO,⍵}\1+⍺(↑⍵)),⍵      ⍝ accumulation of,
+         }/⍵,⍺⍺                          ⍝ sub- (⍺ ⍵-1) combinations,
+     }/(⍳0⌈⍵-⍺),⊂(⍺≤⍵){⍺ ⍵⍴⍳⍵}¨⌽+\⍺⍴1    ⍝ with base cases [⍺ 0].
+ ⍝ Taken from dfns.dyalog.com
+ }

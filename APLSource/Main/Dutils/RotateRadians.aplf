@@ -1,0 +1,9 @@
+ r←rad RotateRadians pointmat;rmat;⎕ML;⎕IO
+
+     ⍝∇   Rotate either a vetor or a 2 column matrix of points
+     ⍝∇     If rad is positive the rotation is clockwise
+ ⎕ML←⎕IO←1
+ rmat←2 2⍴1 ¯1 1 1×2 1 1 2○rad
+ r←pointmat+.×rmat
+
+ :Return

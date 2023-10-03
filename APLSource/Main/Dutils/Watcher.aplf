@@ -1,0 +1,27 @@
+ {f}←n Watcher v;e;po;p;∆p;s;ov;no;k;⎕ML;⎕IO
+     ⍝ f←1
+     ⍝ :Return
+
+     ⍝∇  form_name ← name_tag ∆WATCHER value -- put up a form with the current value
+     ⍝∇                       ────────
+     ⍝∇    fn←'index' ∆WATCHER i     ⍝  inside of loop
+ ⎕ML←⎕IO←1
+
+ :If 0=⎕NC'X∆WATCHER' ⋄ 'X∆WATCHER'⎕NS'' ⋄ :EndIf
+ f←'X∆WATCHER.f',n
+ :If 0=⎕NC f
+     ⍝   build the form
+     ⍝      po←p←90.3 60 ⋄ ∆p←¯8.8 0 ⋄ s←4.7 38.75 ⋄ ov←0 ¯25 ⋄ no←14
+     po←p←3.3 71 ⋄ ∆p←8.8 0 ⋄ s←4.7 28.75 ⋄ ov←0 ¯25 ⋄ no←14
+     po-←∆p
+     k←1+⊃⍴X∆WATCHER.⎕NL 9
+     p←po+ov×⌊(k-1)÷no
+     p+←∆p×1+no|k-1
+     f ⎕WC'Form'n('Posn'p)('Size's)('BCol' 255 255 255)('Event' 'Close' 0)('Coord' 'User')
+        ⍝   f ⎕WG'XRange' 'YRange'
+     e←f,'.e'
+     e ⎕WC'Edit'('Posn' 0 0)('Size' 100 100)('Style' 'Multi')
+ :EndIf
+
+ (f,'.e')⎕WS'Text'(⍕v)
+ ⎕DL 0.000001                   ⍝ allows WINDOWS to display

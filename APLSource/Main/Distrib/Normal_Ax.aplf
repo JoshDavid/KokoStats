@@ -1,0 +1,20 @@
+ z←Normal_Ax x;ker;f;⎕ML;⎕IO
+
+     ⍝∇  z ← Normal x --  the statisticians error fcn:  cum. normal prob. dist.
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ ker←{*-0.5×⍵*2}
+ f←÷0.5*⍨○2
+
+ :If x≤¯4.06
+     z←1-f×ker ##.Dutils.∆GQ ##.Dutils.∆QUAD ¯50 x 100
+ :ElseIf x<0
+     z←0.5+f×ker ##.Dutils.∆GQ ##.Dutils.∆QUAD 0(|x)100
+ :ElseIf x≤4.06
+     z←0.5-f×ker ##.Dutils.∆GQ ##.Dutils.∆QUAD 0 x 100
+ :Else
+     z←f×ker ##.Dutils.∆GQ ##.Dutils.∆QUAD x 50 100
+ :EndIf
+
+
+ :Return

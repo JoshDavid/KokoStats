@@ -1,0 +1,50 @@
+ NS←OrthoCalc(x y fp b xty xtx inv xbar ybar names);Divide;yname;xname;bxty;y11y;yty;yhat;errs;sosbo;sosdr;sostc;sost;dofbo;dofb;doft;ybo;doftc;dofe;msbo;msdr;msar;sesq;serr;fratio;tstat;mrcsq;mrc;seob;max_cov;st_t;pvalues;alpha;list;yhatbar;soser;⎕ML;⎕IO
+
+     ⍝∇   x and y are  the raw data;  b are the regression coefficients
+     ⍝∇   inv is the inverse of the xtx matrix and the ..bar are averages
+
+ ⎕ML←⎕IO←1
+ Divide←{({⍵+⍵=0}⍺)÷{⍵+0.000001000001×⍵=0}⍵}
+ yname xname←2↑names
+
+ bxty←b+.×xty
+ y11y←((+/y)*2)Divide≢y
+ yty←y+.×y
+
+ yhat←fp+.×b
+ yhatbar←Average yhat
+ errs←y-yhat
+
+ sosbo←y11y                         ⍝ constant sos
+ soser←+/errs*2                     ⍝ error sos
+ sostc←+/(y-ybar)*2                 ⍝ sos to be explained
+ sost←yty                           ⍝ total y sos
+ sosdr←sostc-soser                  ⍝ sos that was explained
+
+ ybo←1         ⍝  is there to be an intercept
+ dofbo←ybo
+ dofb←(≢b)-ybo
+ doft←(≢y)
+ doftc←(≢y)-ybo
+ dofe←1⌈doft-(≢b)
+
+ msbo←sosbo
+ msdr←sosdr Divide dofb
+ msar←soser Divide dofe
+ sesq←msar
+ serr←(|sesq)*0.5
+ fratio←3 RndDP 999999⌊(msdr Divide msar)
+ tstat←serr×(|inv)*0.5
+
+ mrcsq←sosdr Divide sostc
+ mrc←4 RndDP((|mrcsq)*0.5)
+ seob←tstat
+
+ max_cov←0
+ st_t←3 RndD b Divide seob
+ pvalues←3 RndD ##.Distrib.Fratio_A¨(|st_t*2),¨⊂doftc 1
+ alpha←3 RndD ##.Distrib.Fratio_A fratio dofb dofe
+
+ NS←⎕NS''
+ list←' '(≠⊆⊢)'x y fp b xty xtx inv xbar ybar yname xname bxty y11y yty yhat errs sosbo sosdr soser sostc sost dofbo dofb dofe doft doftc msbo msdr msar sesq serr fratio tstat mrcsq mrc seob  max_cov st_t pvalues alpha'
+ ⍎'NS.(',(⍕list),')←',⍕list

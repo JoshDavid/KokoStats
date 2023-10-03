@@ -1,0 +1,14 @@
+ cerf←Cerf_alt x;kernel;f;⎕ML;⎕IO
+     ⍝  Complimentary error function: good to at least 12 and usually more digits
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ kernel←{*-⍵*2}
+ f←2÷0.5*⍨○1
+
+ :If x≤4.06
+     cerf←1-f×kernel ∆GQ ∆QUAD 0 x 100
+ :Else
+     cerf←f×kernel ∆GQ ∆QUAD x 50 100
+ :EndIf
+
+ :Return

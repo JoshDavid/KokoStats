@@ -1,0 +1,22 @@
+ (mr ma in io rem add)←MoveRegVars(cr ca i_in i_out);⎕ML;⎕IO
+
+     ⍝∇ the regression variables are either "in" "or "out" and the
+     ⍝∇ idea is to get the right variables into the right catagory.
+     ⍝∇ One way is to use the Fratios from regressions.  cr (remove)
+     ⍝∇ and  ca (add) can be used to move the indexes for the in and
+     ⍝∇ out variables.
+     ⍝∇ Currently this function moves everything possible.
+
+ ⎕ML←⎕IO←1
+ mr←cr>0             ⍝  mask of which can come out
+ ma←ca>0             ⍝  mask of which can be added
+ rem←mr/i_in
+ add←ma/i_out
+ in←(~mr)/i_in       ⍝  take out the "removable" indexes from "in"
+ io←(~ma)/i_out      ⍝  take out the "addable" ndexes from "out"
+ in,←ma/i_out        ⍝  put them the other pile
+ io,←mr/i_in
+ in←{⍵[⍋⍵]}in        ⍝  sort them, just because
+ io←{⍵[⍋⍵]}io
+
+ :Return

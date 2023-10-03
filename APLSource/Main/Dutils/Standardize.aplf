@@ -1,0 +1,27 @@
+ stdata←Standardize data;sdata;n;a;s;⎕ML;⎕IO
+
+     ⍝∇   Give the data a mean of zero and a sdt.dev. of 1
+     ⍝∇   data is either a vector or a vector of vectors
+     ⍝∇   if data is a matrix, assume columns are variables, split it.
+     ⍝∇   and return it as a matrix
+
+ ⎕ML←⎕IO←1
+ sdata←data
+ :If 2=⍴⍴data
+     sdata←↓[1]sdata
+ :EndIf
+
+ :If 1=≡sdata
+     n←≢sdata
+     a←(+/data)÷n
+     s←sdata-a
+     stdata←s÷((+/s*2)÷n-1)*0.5
+     :Return
+ :Else
+     stdata←Standardize¨sdata
+ :EndIf
+
+
+ :If 2=⍴⍴data
+     stdata←↑[0.5]stdata
+ :EndIf

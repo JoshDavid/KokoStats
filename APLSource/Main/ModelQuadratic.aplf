@@ -1,0 +1,22 @@
+ {(model names)}←ModelQuadratic vov;n;m;cross;c;cr;⎕ML;⎕IO
+
+     ⍝∇   Create:  w x y z ... w*2 x*2 y*2 z*2 ... wx wy wz xy xz ...
+
+ ⎕ML←⎕IO←1
+
+ model←vov,(vov*2)
+ n←⍳≢vov
+ m←,n∘.<0,n
+ cross←m/,(vov∘.×1,vov)
+ model,←cross
+
+ c←(≢vov)↑⎕A
+ names←(,¨c),(c,¨c)
+ cr←m/,c∘.,1,c
+ names,←cr
+
+ :Return
+
+ w x y z←(2 1 2 1)(⍳4)(5 4 3 2)(88 66 44 22)
+ m←,(⍳5)∘.≤⍳5
+ two←m/,(1,(w x y z))∘.×(1,(w x y z))

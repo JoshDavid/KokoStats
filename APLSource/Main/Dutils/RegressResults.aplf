@@ -1,0 +1,34 @@
+ NSR←RegressResults NSC;pvalues;nb;nd;T;U;E;S;Result;AnovaR;yvn;xvns;⎕ML;⎕IO
+
+ ⎕ML←⎕IO←1
+ NSR←⎕NS''
+
+ nb←≢NSC.b ⋄ nd←≢NSC.y
+ Result←((nb+2),8)⍴0
+ Result[;1]←' variables ' '----------',(NSC.xnames)
+ Result[;2]←'         B      ' '  -------------',7 RndS¨NSC.b
+ Result[;3]←'    std. err.   ' '  -------------',8 RndDP¨NSC.seob
+ Result[;4]←'  stud_t' '  ------',2 RndDP|NSC.st_t
+ Result[;5]←' alpha P' '  ------',3 RndDP NSC.pvalues
+ Result[;6]←' max.cov.' ' --------',NSC.bigcv
+ Result[;7]←' F-remove' ' --------',3 RndDP 99999⌊(NSC.st_t*2)
+ Result[;8]←' Alpha' ' --------',3 RndDP ##.Distrib.Fratio_A¨(|NSC.st_t*2),¨⊂1 NSC.dofe
+
+
+ T←'          Sum of Squares' '  DOF' '           Mean Square  ' '   F ratio ' '   Alpha '
+ U←' -----------------------' ' ----' ' -----------------------' '  ---------' '  -------'
+ E←' =======================' ' ====' ' =======================' '  =========' '   '
+ S←'    Source  ' '  ----------' ' constant ' ' due to reg.' ' error   ' ' ===========' ' total corr.' ' uncorrected'
+ AnovaR←8 5⍴⊂'  '
+ AnovaR[1;]←T
+ AnovaR[2;]←U
+ AnovaR[3;]←(3 RndDP NSC.sosbo),NSC.dofbo,(3 RndDP NSC.msbo),'  ' '  '
+ AnovaR[4;]←(3 RndDP NSC.sosdr),NSC.dofb,(3 RndDP NSC.msdr),(NSC.fratio),(4 RndDP NSC.alpha)
+ AnovaR[5;]←(3 RndDP NSC.sosar),NSC.dofe,(3 RndDP NSC.msar),'  ' '  '
+ AnovaR[6;]←E
+ AnovaR[7;]←(3 RndDP NSC.sostc),NSC.doftc,'  ' '  ' '  '
+ AnovaR[8;]←(3 RndDP NSC.sost),NSC.doft,'  ' '  ' '  '
+ AnovaR←S,AnovaR
+
+ NSR.Result←Result
+ NSR.AnovaR←AnovaR

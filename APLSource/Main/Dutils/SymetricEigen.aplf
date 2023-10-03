@@ -1,0 +1,9 @@
+ (a d e z)←v SymetricEigen a;n;d;e;z;⎕ML;⎕IO
+
+ ⎕ML←⎕IO←1
+ n←≢a
+ a d e←Trired v a n
+ a d e z←ImplicitQL v a d e n
+
+ z←z⍪a
+ z←z[;⍒z[1;]]

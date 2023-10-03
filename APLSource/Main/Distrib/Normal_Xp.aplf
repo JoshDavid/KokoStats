@@ -1,0 +1,10 @@
+ x←Normal_Xp cumdf;ker;⎕ML;⎕IO
+
+      ⍝∇ find x that satisfies the tail of the cumulative normal distribution - alpha
+
+ ⎕ML←⎕IO←1
+
+ ker←{cumdf-Normal_P ⍵}
+ x←ker ##.Dutils.HalfStep ¯50 50 60
+
+ :Return

@@ -1,0 +1,14 @@
+ erf←Erf_alt x;kernel;f;⎕ML;⎕IO
+     ⍝  this is good to at least 12 and usually more digits
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ kernel←{*-⍵*2}
+ f←(2÷(○1)*0.5)
+
+ :If x≤4.06
+     erf←f×kernel ∆GQ ∆QUAD 0 x 100
+ :Else
+     erf←1-f×kernel ∆GQ ∆QUAD x 50 100
+ :EndIf
+
+ :Return

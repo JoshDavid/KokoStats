@@ -1,0 +1,59 @@
+ vov_data←LeadLag args;nv;nu;nf;nx;i;m;f;fl;⎕ML;⎕IO
+
+     ⍝∇   There are times when data are a function of time, that you need
+     ⍝∇   to "line stuff up".   Rainfall and river level for example.  The
+     ⍝∇   river sizes at a later time than when the rain fell.   What you
+     ⍝∇   order actually arrives later.  Some materials need to be ordered
+     ⍝∇   before others to have everyting ready for the construction job.
+     ⍝∇   Early decision college offers might be accepted earlier than
+     ⍝∇   regular offers.
+
+     ⍝∇   Input:   related set (vector) of variables, (all the same length)
+     ⍝∇            an equal size vector of how much each variable should be
+     ⍝∇                 lifted (+) or pushed down (-) or left alone (0)
+     ⍝∇            what the "fill" value should be: "L" last value before
+     ⍝∇                 the fill or "Z" zero fill or "B" for blank (character
+     ⍝∇                 data) or a number (which could be 0)
+     ⍝∇            should the bottom of all variables be lopped off below the
+     ⍝∇                 bottom of the biggest "lifted" variable (1) or not (0)
+     ⍝∇            should the top of all variables be lopped off down to the
+     ⍝∇                 top of the biggest "pushed down" variable (1) or not (0)
+
+ ⎕ML←⎕IO←1
+ vov_data updown fill cut_bottom cut_top←5↑args,0 1 1
+ nv←≢vov_data
+ nu←≢updown
+ :If nv≠nu ⋄ 'up/down needs one value for each x:  try again' ⋄ :Return ⋄ :EndIf
+
+ nf←≢,fill
+ :If nf=1 ⋄ fill←nv⍴fill ⋄ :EndIf
+ nx←≢⊃vov_data
+
+ :For i :In ⍳nv
+     m←i⊃updown
+     fl←i⊃fill
+     :If fl∊'Zz' ⋄ f←0 ⋄ :EndIf
+     :If fl∊'Bb' ⋄ f←⊂,' ' ⋄ :EndIf
+     :If Dutils.IsNumb fl ⋄ f←fl ⋄ :EndIf
+
+     :If m=0 ⋄ :Continue ⋄ :EndIf
+     :If m>0
+         :If fl∊'Ll' ⋄ f←⊃¯1↑i⊃vov_data ⋄ :EndIf
+         (i⊃vov_data)←(m↓i⊃vov_data),m⍴f
+     :Else
+         :If fl∊'Ll' ⋄ f←⊃i⊃vov_data ⋄ :EndIf
+         (i⊃vov_data)←((-m)⍴f),m↓i⊃vov_data
+     :EndIf
+ :EndFor
+
+ :If cut_bottom
+     vov_data←(-⌈/updown)↓¨vov_data
+ :EndIf
+
+
+ :If cut_top
+     vov_data←(-⌊/updown)↓¨vov_data
+ :EndIf
+
+
+ :Return

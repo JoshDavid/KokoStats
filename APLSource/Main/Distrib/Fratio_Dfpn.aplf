@@ -1,0 +1,15 @@
+ N←Fratio_Dfpn(F cumdf dofn);Fun;⎕ML;⎕IO;alpha
+
+     ⍝∇  Return: Critical denominator-degrees-of-freedom for the F-ratio cumlulative distribution
+     ⍝∇  Given:  Critical Fratio value, alpha (tail probability), and   numerator-degrees-of-freedom.
+     ⍝∇
+     ⍝∇                    alpha is the "tail" area  alpha = 1-p (the cumulatlive
+     ⍝∇                    distribution)
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ alpha←1-cumdf
+ Fun←{alpha-Fratio_alpha F dofn ⍵}
+ N←⌈Fun ##.Dutils.HalfStepI 1 100000 24
+ N←N⌊1000000
+
+ :Return

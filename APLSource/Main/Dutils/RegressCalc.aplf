@@ -1,0 +1,67 @@
+ NS←RegressCalc(x y b xty xtx inv xbar ybar ib names);Divide;yname;xnames;bxty;y11y;yty;yhat;errs;sosbo;sosdr;sosar;sostc;sost;dofbo;dofb;dofe;doft;doftc;msbo;msdr;msar;sesq;serr;fratio;tstat;mrcsq;mrc;seob;trc;denom;req;covr;bigcv;max_cov;st_t;list;pvalues;alpha;r;const;m;ic;k;⎕ML;⎕IO
+
+     ⍝∇   x and y are  the raw data;  b are the regression coefficients
+     ⍝∇   inv is the inverse of the xtx matrix and the ..bar are averages
+
+ ⎕ML←⎕IO←1
+
+ Divide←{({⍵+⍵=0}⍺)÷{⍵+0.000001000001×⍵=0}⍵}
+ yname←⊃names
+ xnames←1↓names
+ const←∨/m←+/1=x
+ :If const
+     ic←m⍳1
+     k←⍳2⊃⍴x
+     x←x[;ic,k~ic]
+     names←names[1(ic+1)],(1↓names)[k~ic]
+ :EndIf
+ bxty←b+.×xty
+ :If const
+     y11y←((+/y)*2)Divide≢y
+ :Else
+     y11y←0
+ :EndIf
+ yty←y+.×y
+
+ yhat←x+.×b
+ errs←y-yhat
+
+ sosbo←y11y
+ sosdr←+/(yhat-const×ybar)*2
+ sosar←+/errs*2
+ sostc←+/(y-const×ybar)*2
+ sost←yty
+
+ dofbo←∧/x[;1]=1
+ dofb←(≢b)-dofbo
+ dofe←(≢y)-≢b
+ doft←≢y
+ doftc←doft-dofbo
+
+ msbo←sosbo
+ msdr←sosdr Divide dofb
+ msar←sosar Divide dofe
+ sesq←msar
+ serr←(|sesq)*0.5
+ fratio←3 RndDP 999999⌊(msdr Divide msar)
+ tstat←serr×(|inv)*0.5
+ mrcsq←sosdr Divide sostc
+ mrc←3 RndDP((|mrcsq)*0.5)
+ seob←1 1⍉tstat
+
+ trc←1000000000000000⌊¯1000000000000000⌈1 1⍉inv
+ denom←trc∘.×trc
+ denom←(denom=0)+(denom×denom≠0)
+ req←inv Divide(|denom)*0.5
+ covr←4 RndDP¨(req-ib)
+ bigcv←⌈/|covr
+ max_cov←⌈/|bigcv
+ st_t←⍎¨3⍕¨(b Divide 1E¯9⌈seob)
+ pvalues←##.Distrib.Student_A¨(|st_t),¨doftc
+ alpha←##.Distrib.Fratio_A fratio dofb dofe
+
+ NS←⎕NS''
+ list←' '(≠⊆⊢)'x y b xty xtx inv xbar ybar ib yname xnames bxty y11y yty yhat errs sosbo sosdr sosar sostc sost dofbo dofb dofe doft doftc msbo msdr msar sesq serr fratio tstat mrcsq mrc seob trc denom req covr bigcv max_cov st_t pvalues alpha'
+ ⍎'NS.(',(⍕list),')←',⍕list
+
+ :Return

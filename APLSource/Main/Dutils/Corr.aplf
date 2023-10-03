@@ -1,0 +1,12 @@
+ c←Corr(x y);ax;ay;dx;dy;sosx;sosy;soxy;srx;sry;⎕ML;⎕IO
+
+ ⎕ML←⎕IO←1
+
+ ax ay←(SumByTwos¨x y)÷≢x
+ dx dy←x y-ax ay
+ sosx sosy←SumByTwos¨(dx*2)(dy*2)
+ srx sry←sosx sosy*0.5
+ soxy←SumByTwos dx×dy
+ c←soxy÷srx×sry
+
+ :Return

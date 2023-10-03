@@ -1,0 +1,9 @@
+ r←n RndS v;k;⎕ML;⎕IO
+
+     ⍝∇ round to n significant digits:  1235000  ← 4 RndS 1234567.89
+
+ ⎕ML←⎕IO←1
+ k←10*1-n-⌊10⍟|v+v=0
+ r←(v≠0)×k×⌊0.5+v÷k
+
+ :Return

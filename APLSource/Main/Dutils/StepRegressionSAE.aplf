@@ -1,0 +1,75 @@
+ out←y StepRegressionSAE x;⎕ML;⎕IO;n;xbar;ybar;nb;one;yesbo;dfbo;dfb;dft;dftc;dfe;I;Ib;xtx;xty;dl;ai;a;check;xa;coeffs;b;btxty;y11y;yty;yhat;errs;sosbo;sosdr;sosar;sostc;sost;msbo;msdr;msar;sesq;serr;f_ratio;t_stat;mrcsq;mrc;seob;trc;denom;req;covr;bigcv;max_cov;st_t;f_remove;big_e;sort;durb;dig_l;out
+
+     ⍝∇  solve the current set of equations and get its statistics
+
+ ⎕ML←⎕IO←1
+
+ n←≢y
+ xbar←Average¨↓[1]x
+ ybar←Average y
+ nb←≢xbar
+ one←n⍴1
+ yesbo←one≡x[;1]
+ dfbo←yesbo           ⍝ degress of freedom for constant
+ dfb←nb-yesbo         ⍝ degress of freedom for the x's
+ dft←n                ⍝ total dof
+ dftc←n-yesbo         ⍝ dof other than constant
+ dfe←dft-nb           ⍝ error dof
+
+ I←n n⍴0 ⋄ (1 1⍉I)←1  ⍝ identity matrix   n n⍴1,n⍴0
+ Ib←nb nb⍴0 ⋄ (1 1⍉Ib)←1
+
+ xtx←(⍉x)+.×x
+ xty←(⍉x)+.×y
+
+ b dl ai a check CN←xty SolveSLAE xtx   ⍝ b ≡≡ anwers    dl ≡≡ digits_lost
+                                                           ⍝ ai ≡≡ inverse  a ≡≡ what is left in the original A matrix ≡≡? Identity
+                                                           ⍝ check ≡≡ ?     CN ≡≡ condition number
+ btxty←b+.×xty
+ y11y←((+/y)*2)Divide≢y
+ yty←y+.×y
+
+ yhat←x+.×b
+ errs←y-yhat
+
+ sosbo←y11y
+ sosdr←+/(yhat-ybar)*2
+ sosar←+/errs*2
+ sostc←+/(y-ybar)*2
+ sost←yty
+
+ msbo←sosbo
+ msdr←sosdr Divide dfb
+ msar←sosar Divide dfe
+ sesq←msar
+ serr←sesq*0.5
+ f_ratio←2 RndDP 999999⌊(msdr Divide msar)
+
+ t_stat←serr×(|ai)*0.5
+ mrcsq←sosdr Divide sostc
+ mrc←4 RndDP(mrcsq*0.5)
+ seob←1 1⍉t_stat
+
+
+ trc←1000000000000000⌊¯1000000000000000⌈1 1⍉ai
+ denom←trc∘.×trc
+ denom←(denom=0)+(denom×(denom≠0))
+ req←ai Divide(|denom)*0.5
+ Ib←(⍴req)↑Ib
+ covr←4 RndDP(req-Ib)
+ bigcv←⌈/|covr
+ max_cov←⌈/|bigcv
+ st_t←2 RndDP(b Divide seob)
+
+ f_remove←99999⌊st_t*2
+
+ big_e←⊃⌈/|errs
+
+ sort←errs[⍋y]
+ durb←2 RndDP(+/((¯1↓sort)-(1↓sort))*2)Divide+/sort*2
+
+ dig_l←2 RndDP dl
+
+ out←(b)(f_ratio)(f_remove)(sosar÷n)(big_e)(durb)(dig_l)(errs)
+
+ :Return

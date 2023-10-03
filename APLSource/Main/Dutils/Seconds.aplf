@@ -1,0 +1,3 @@
+ ts←Seconds
+ ts←0.001×24 60 60 1000⊥¯4↑⎕TS
+ :Return
