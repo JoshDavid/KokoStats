@@ -1,0 +1,16 @@
+ F←Fratio_Fa and;alpha;dofn;dofd;Funx;⎕ML;⎕IO
+
+     ⍝∇ deliver the critical F-ratio for given alpha and numerator and
+     ⍝∇         denominator degrees of freedom.
+     ⍝∇  accurate for dofd=1 to just 2-3 digits (takes way toooo long
+     ⍝∇     to get more accuracy:  change the NON in IncBetaI to 100000
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ alpha dofn dofd←3↑and,1,1
+     ⍝  search for the F delivers the given alpha
+     ⍝  create the search function
+     ⍝ Funx←{alpha-Fratio_alpha ⍵ dofn dofd}
+ Funx←{alpha-Fratio_Q ⍵ dofn dofd}
+
+ F←Funx ##.Dutils.HalfStep 0.1(1+2*20)50
+ F←10000000000⌊F

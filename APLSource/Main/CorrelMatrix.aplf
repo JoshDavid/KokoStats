@@ -1,4 +1,4 @@
- {cm}←{names}CorrelMatrix x;avex;delt;sosq;srsos;sxy;cros;names;mdelt;⎕ML;⎕IO
+ cm←{names}CorrelMatrix x;avex;delt;sosq;srsos;sxy;cros;names;mdelt;⎕ML;⎕IO
 
      ⍝∇ the correlation matrix between the input vector of vectors
 
@@ -14,7 +14,7 @@
 
  cm←3 Dutils.RndDP¨sxy÷cros
  :If 0=⎕NC'names'
-     names←'X',¨⍳≢cm
+     names←'X',∘⍕¨⍳≢cm
  :EndIf
  cm←(' ',names),names⍪cm
 
