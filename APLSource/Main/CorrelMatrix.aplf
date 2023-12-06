@@ -1,7 +1,6 @@
  CorrelMatrix←{
-⍝ ∇ the correlation matrix between the input vector of vectors, or Matrix input
+⍝ The correlation matrix between the input vector of vectors, or Matrix input
 ⍝ ⍺ ←→ Optional variable names, 1st row if Matrix input
-     ⎕ML←⎕IO←1
      2=⍴⍴⍵:(,1↑⍵)∇↓⍉1↓⍵
      ⍺←'X',∘⍕¨⍳≢⍵
      avex←Dutils.Average¨⍵

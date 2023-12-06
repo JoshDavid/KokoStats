@@ -1,27 +1,23 @@
- {wv}←{window_width}TukeyWindow v;n;ww;s;w;⎕ML;⎕IO
-
-     ⍝∇          provide the original Tukey-Interim-Window.  This is "cosine"
-     ⍝∇          rounding at each end of a time string to improve the apparent
-     ⍝∇          power spectrum and FFT.  Sharp "edges" cause spurious
-     ⍝∇          harmonics, and this is supposed to reduce that problem.
-     ⍝∇          width is the fraction of the data to be effected at each end.
-
-
-      ⍝  0 to pi
-      ⍝  cosine  goes 1 to ¯1  <::>  1-cos  goes 0 to 2  <::>  ÷ by 2  goes 0 to 1
-      ⍝
-      ⍝       ******
-      ⍝      *      *
-      ⍝     *        *
-      ⍝  * *          **
-
- ⎕ML←⎕IO←1
-
- n←≢v
- :If 0=⎕NC'window_width' ⋄ window_width←0.25 ⋄ :EndIf
- ww←⌈window_width×n
- s←⍳ww
- w←○(s-1)÷ww-1               ⍝ the range of cosine: 0 to pi
- w←0.5×1-2○w                 ⍝ the scaled cosine:  the "window"  edge
- w←w,((n-2×ww)⍴1),⌽w         ⍝ the full window
- wv←w×v
+ TukeyWindow←{
+ ⍝   ⍺ ←→ Optional Window width
+ ⍝   provide the original Tukey-Interim-Window.  This is "cosine"
+ ⍝   rounding at each end of a time string to improve the apparent
+ ⍝   power spectrum and FFT.  Sharp "edges" cause spurious
+ ⍝   harmonics, and this is supposed to reduce that problem.
+ ⍝   width is the fraction of the data to be effected at each end.
+ ⍝   0 to pi
+ ⍝   cosine  goes 1 to ¯1  <::>  1-cos  goes 0 to 2  <::>  ÷ by 2  goes 0 to 1
+ ⍝
+ ⍝        ******
+ ⍝       *      *
+ ⍝      *        *
+ ⍝    **          **
+     n←≢v←⍵
+     ⍺←0.25
+     ww←⌈⍺×n
+     s←⍳ww
+     w←○(s-1)÷ww-1               ⍝ the range of cosine: 0 to pi
+     w←0.5×1-2○w                 ⍝ the scaled cosine:  the "window"  edge
+     w←w,((n-2×ww)⍴1),⌽w         ⍝ the full window
+     wv←w×v
+ }
