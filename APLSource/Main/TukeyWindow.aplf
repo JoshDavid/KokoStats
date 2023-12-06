@@ -19,5 +19,5 @@
      w←○(s-1)÷ww-1               ⍝ the range of cosine: 0 to pi
      w←0.5×1-2○w                 ⍝ the scaled cosine:  the "window"  edge
      w←w,((n-2×ww)⍴1),⌽w         ⍝ the full window
-     wv←w×v
+     w×v
  }
