@@ -1,0 +1,10 @@
+ p←Fratio_Q(F dn dd);x;⎕ML;⎕IO
+
+     ⍝∇   Given:   a Critical_Fratio value, the numerator and denominator degress of freedom
+     ⍝∇   Return:  the tail area - alpha
+     ⍝∇
+     ⍝∇   A&S  26.6.2  p946     :: in A&S this is "Q"  (1-P)
+
+ ⎕ML←1 ⋄ ⎕IO←1
+ x←dd÷dd+F×dn
+ p←##.Dutils.IncBetaI x,0.5×dd dn    ⍝  integrals for dofd 1 and 2 take a while
