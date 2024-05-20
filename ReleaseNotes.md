@@ -1,4 +1,11 @@
-# KokoStats Release 0.0.1                    
+# KokoStats Release 0.0.2                    
+1. Create Fratio_Q.aplf
+2. Delete file
+3. non-shy result
+4. Remove file
+5. tfn → dfn
+
+# KokoStats Release 0.0.1 2023-12-05 20:53:52
 1. CorrelMatrix accepts rank 2 input
 2. Force include intercept until Issue #2 is properly resolved
 3. changes for TamStat
