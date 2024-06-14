@@ -1,4 +1,7 @@
-# KokoStats Release 0.0.2                    
+# KokoStats Release 0.0.3                    
+1. add chisq_q
+
+# KokoStats Release 0.0.2 2024-05-20 11:00:01
 1. Create Fratio_Q.aplf
 2. Delete file
 3. non-shy result
